@@ -1,6 +1,7 @@
 package sogang.capstone.blahblahfridge.domain;
 
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -21,17 +22,18 @@ import lombok.ToString;
 @Table(name = "Ingredient")
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-@ToString
+@ToString(exclude = "menuIngredients")
 public class Ingredient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 20)
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", nullable = false)
     private IngredientCategory category;
 
     @OneToMany(mappedBy = "ingredient")

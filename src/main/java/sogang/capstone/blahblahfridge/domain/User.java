@@ -20,18 +20,23 @@ import lombok.ToString;
 @Table(name = "User")
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-@ToString
+@ToString(exclude = "reviews")
 public class User extends AbstractTimestamp {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true, length = 10)
     private String username;
 
+    @Column(columnDefinition = "TEXT")
     private String image;
 
-    @Column(name = "authentication_code")
+    @Column(name = "authentication_code", nullable = false, unique = true)
     private String authenticationCode;
+
+    @Column(nullable = false, length = 10)
     private String provider;
 
     @OneToMany(mappedBy = "user")
