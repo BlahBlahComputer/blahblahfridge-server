@@ -1,6 +1,5 @@
 package sogang.capstone.blahblahfridge.domain;
 
-import java.sql.Timestamp;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,8 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @Setter
@@ -24,7 +21,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 @ToString
-public class User {
+public class User extends AbstractTimestamp {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,14 +33,6 @@ public class User {
     @Column(name = "authentication_code")
     private String authenticationCode;
     private String provider;
-
-    @Column(name = "created_at")
-    @CreationTimestamp
-    private Timestamp createdAt;
-
-    @Column(name = "updated_at")
-    @UpdateTimestamp
-    private Timestamp updatedAt;
 
     @OneToMany(mappedBy = "user")
     private List<Review> reviews;
