@@ -47,4 +47,15 @@ public class MenuController {
         }
     }
 
+    @GetMapping(value = "/detail/{id}", produces = "application/json; charset=utf-8")
+    @ResponseBody
+    public MenuDTO getMenuById(@PathVariable("id") Long id) {
+        Optional<Menu> menu = repo.findById(id);
+        if (menu.isEmpty()) {
+            throw new RuntimeException();
+        } else {
+            MenuDTO menuDTO = new MenuDTO(menu.get());
+            return menuDTO;
+        }
+    }
 }
