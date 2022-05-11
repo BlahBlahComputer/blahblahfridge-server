@@ -8,15 +8,17 @@ import sogang.capstone.blahblahfridge.domain.Menu;
 @ToString
 public class MenuDTO {
 
-    private String name;
     private String image;
-    private Integer time;
+    private String name;
     private String recipe;
+    private Integer time;
+    private String category;
 
     public MenuDTO(Menu menu) {
-        this.name = menu.getName();
         this.image = menu.getImage();
-        this.time = menu.getTime();
+        this.name = menu.getName();
         this.recipe = menu.getRecipe();
+        this.time = menu.getTime();
+        this.category = menu.getCategory().getName();
     }
 }
