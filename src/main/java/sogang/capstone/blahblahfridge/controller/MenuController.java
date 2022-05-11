@@ -1,5 +1,7 @@
 package sogang.capstone.blahblahfridge.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,19 @@ public class MenuController {
     @Autowired
     MenuRepository repo;
 
+    @GetMapping(produces = "application/json; charset=utf-8")
+    @ResponseBody
+    public List<MenuDTO> findAllMenu() {
+        List<MenuDTO> menuDTOList = new ArrayList<>();
+        List<Menu> menuList = repo.findAll();
+
+        for (Menu menu : menuList) {
+            menuDTOList.add(new MenuDTO(menu));
+        }
+
+        return menuDTOList;
+    }
+
     @GetMapping(value = "/{name}", produces = "application/json; charset=utf-8")
     @ResponseBody
     public MenuDTO getMenuByName(@PathVariable("name") String name) {
@@ -31,4 +46,5 @@ public class MenuController {
             return menuDTO;
         }
     }
+
 }
