@@ -3,8 +3,8 @@ package sogang.capstone.blahblahfridge.controller;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,15 +24,11 @@ import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
 @Log
 @Controller
 @RequestMapping("menu")
+@AllArgsConstructor
 public class MenuController {
 
-    @Autowired
     MenuRepository repo;
-
-    @Autowired
     MenuIngredientRepository miRepo;
-
-    @Autowired
     ReviewRepository rRepo;
 
     @GetMapping(produces = "application/json; charset=utf-8")

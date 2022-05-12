@@ -1,11 +1,13 @@
 package sogang.capstone.blahblahfridge.dto;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import sogang.capstone.blahblahfridge.domain.Menu;
 
 @Getter
 @ToString
+@EqualsAndHashCode
 public class MenuDTO {
 
     private String image;
