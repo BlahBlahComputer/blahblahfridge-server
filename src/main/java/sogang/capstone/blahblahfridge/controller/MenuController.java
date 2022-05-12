@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import sogang.capstone.blahblahfridge.domain.Menu;
 import sogang.capstone.blahblahfridge.domain.MenuIngredient;
@@ -47,9 +48,9 @@ public class MenuController {
         return menuDTOList;
     }
 
-    @GetMapping(value = "/{name}", produces = "application/json; charset=utf-8")
+    @GetMapping(value = "/search", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public MenuDTO getMenuByName(@PathVariable("name") String name) {
+    public MenuDTO getMenuByName(@RequestParam("name") String name) {
         Optional<Menu> menu = repo.findByName(name);
         if (menu.isEmpty()) {
             throw new RuntimeException();
@@ -59,7 +60,7 @@ public class MenuController {
         }
     }
 
-    @GetMapping(value = "/detail/{id}", produces = "application/json; charset=utf-8")
+    @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
     @ResponseBody
     public MenuDTO getMenuById(@PathVariable("id") Long id) {
         Optional<Menu> menu = repo.findById(id);
@@ -71,7 +72,7 @@ public class MenuController {
         }
     }
 
-    @GetMapping(value = "/detail/{id}/ingredient", produces = "application/json; charset=utf-8")
+    @GetMapping(value = "/{id}/ingredient", produces = "application/json; charset=utf-8")
     @ResponseBody
     public List<MenuIngredientDTO> getMenuIngredientById(@PathVariable("id") Long id) {
         List<MenuIngredientDTO> menuIngredientDTOList = new ArrayList<>();
@@ -84,7 +85,7 @@ public class MenuController {
         return menuIngredientDTOList;
     }
 
-    @GetMapping(value = "/detail/{id}/review", produces = "application/json; charset=utf-8")
+    @GetMapping(value = "/{id}/review", produces = "application/json; charset=utf-8")
     @ResponseBody
     public List<ReviewDTO> getReviewById(@PathVariable("id") Long id) {
         List<ReviewDTO> reviewDTOList = new ArrayList<>();
