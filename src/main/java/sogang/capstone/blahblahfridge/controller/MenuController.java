@@ -1,8 +1,8 @@
 package sogang.capstone.blahblahfridge.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -38,12 +38,10 @@ public class MenuController {
     @GetMapping(produces = "application/json; charset=utf-8")
     @ResponseBody
     public List<MenuDTO> findAllMenu() {
-        List<MenuDTO> menuDTOList = new ArrayList<>();
         List<Menu> menuList = repo.findAll();
-
-        for (Menu menu : menuList) {
-            menuDTOList.add(new MenuDTO(menu));
-        }
+        List<MenuDTO> menuDTOList = menuList.stream()
+            .map(MenuDTO::new)
+            .collect(Collectors.toList());
 
         return menuDTOList;
     }
@@ -54,10 +52,10 @@ public class MenuController {
         Optional<Menu> menu = repo.findByName(name);
         if (menu.isEmpty()) {
             throw new RuntimeException();
-        } else {
-            MenuDTO menuDTO = new MenuDTO(menu.get());
-            return menuDTO;
         }
+
+        MenuDTO menuDTO = new MenuDTO(menu.get());
+        return menuDTO;
     }
 
     @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
@@ -66,21 +64,19 @@ public class MenuController {
         Optional<Menu> menu = repo.findById(id);
         if (menu.isEmpty()) {
             throw new RuntimeException();
-        } else {
-            MenuDTO menuDTO = new MenuDTO(menu.get());
-            return menuDTO;
         }
+
+        MenuDTO menuDTO = new MenuDTO(menu.get());
+        return menuDTO;
     }
 
     @GetMapping(value = "/{id}/ingredient", produces = "application/json; charset=utf-8")
     @ResponseBody
     public List<MenuIngredientDTO> getMenuIngredientById(@PathVariable("id") Long id) {
-        List<MenuIngredientDTO> menuIngredientDTOList = new ArrayList<>();
         List<MenuIngredient> menuIngredientList = miRepo.findAllByMenuId(id);
-
-        for (MenuIngredient menuIngredient : menuIngredientList) {
-            menuIngredientDTOList.add(new MenuIngredientDTO(menuIngredient));
-        }
+        List<MenuIngredientDTO> menuIngredientDTOList = menuIngredientList.stream()
+            .map(MenuIngredientDTO::new)
+            .collect(Collectors.toList());
 
         return menuIngredientDTOList;
     }
@@ -88,12 +84,10 @@ public class MenuController {
     @GetMapping(value = "/{id}/review", produces = "application/json; charset=utf-8")
     @ResponseBody
     public List<ReviewDTO> getReviewById(@PathVariable("id") Long id) {
-        List<ReviewDTO> reviewDTOList = new ArrayList<>();
         List<Review> reviewList = rRepo.findAllByMenuId(id);
-
-        for (Review review : reviewList) {
-            reviewDTOList.add(new ReviewDTO(review));
-        }
+        List<ReviewDTO> reviewDTOList = reviewList.stream()
+            .map(ReviewDTO::new)
+            .collect(Collectors.toList());
 
         return reviewDTOList;
     }
