@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import sogang.capstone.blahblahfridge.domain.Menu;
+import sogang.capstone.blahblahfridge.domain.MenuIngredient;
 import sogang.capstone.blahblahfridge.dto.MenuDTO;
+import sogang.capstone.blahblahfridge.dto.MenuIngredientDTO;
+import sogang.capstone.blahblahfridge.persistence.MenuIngredientRepository;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 
 @Log
@@ -21,6 +24,9 @@ public class MenuController {
 
     @Autowired
     MenuRepository repo;
+
+    @Autowired
+    MenuIngredientRepository miRepo;
 
     @GetMapping(produces = "application/json; charset=utf-8")
     @ResponseBody
@@ -57,5 +63,18 @@ public class MenuController {
             MenuDTO menuDTO = new MenuDTO(menu.get());
             return menuDTO;
         }
+    }
+
+    @GetMapping(value = "/detail/{id}/ingredient", produces = "application/json; charset=utf-8")
+    @ResponseBody
+    public List<MenuIngredientDTO> getMenuIngredientById(@PathVariable("id") Long id) {
+        List<MenuIngredientDTO> menuIngredientDTOList = new ArrayList<>();
+        List<MenuIngredient> menuIngredientList = miRepo.findAllByMenuId(id);
+
+        for (MenuIngredient menuIngredient : menuIngredientList) {
+            menuIngredientDTOList.add(new MenuIngredientDTO(menuIngredient));
+        }
+
+        return menuIngredientDTOList;
     }
 }
