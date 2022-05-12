@@ -33,6 +33,9 @@ public class Review extends AbstractTimestamp {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @Column(columnDefinition = "TEXT")
+    private String image;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
