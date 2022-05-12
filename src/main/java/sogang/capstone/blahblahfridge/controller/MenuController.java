@@ -12,10 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import sogang.capstone.blahblahfridge.domain.Menu;
 import sogang.capstone.blahblahfridge.domain.MenuIngredient;
+import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.dto.MenuDTO;
 import sogang.capstone.blahblahfridge.dto.MenuIngredientDTO;
+import sogang.capstone.blahblahfridge.dto.ReviewDTO;
 import sogang.capstone.blahblahfridge.persistence.MenuIngredientRepository;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
+import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
 
 @Log
 @Controller
@@ -27,6 +30,9 @@ public class MenuController {
 
     @Autowired
     MenuIngredientRepository miRepo;
+
+    @Autowired
+    ReviewRepository rRepo;
 
     @GetMapping(produces = "application/json; charset=utf-8")
     @ResponseBody
@@ -76,5 +82,18 @@ public class MenuController {
         }
 
         return menuIngredientDTOList;
+    }
+
+    @GetMapping(value = "/detail/{id}/review", produces = "application/json; charset=utf-8")
+    @ResponseBody
+    public List<ReviewDTO> getReviewById(@PathVariable("id") Long id) {
+        List<ReviewDTO> reviewDTOList = new ArrayList<>();
+        List<Review> reviewList = rRepo.findAllByMenuId(id);
+
+        for (Review review : reviewList) {
+            reviewDTOList.add(new ReviewDTO(review));
+        }
+
+        return reviewDTOList;
     }
 }
