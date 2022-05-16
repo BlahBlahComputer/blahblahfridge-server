@@ -2,6 +2,7 @@ package sogang.capstone.blahblahfridge.unit.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -81,6 +82,69 @@ public class MenuControllerTest {
         ArrayList<MenuDTO> menuDTOList = new ArrayList<MenuDTO>();
         menuDTOList.add(menuDTO);
         Assertions.assertEquals(menuDTOList, result);
+    }
+
+    @Test
+    @DisplayName("메뉴를 아이디로 검색했으나 결과가 없을 때, 예외 처리 되는지 확인")
+    public void testIfMenuNotExistThenThrowException() {
+        // given
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+        Mockito.when(mockMenuRepository.findById(100L))
+            .thenThrow(new RuntimeException());
+
+        MenuIngredientRepository mockMenuIngredientRepository = Mockito.mock(
+            MenuIngredientRepository.class);
+        ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
+
+        // when
+        MenuController menuController = new MenuController(
+            mockMenuRepository,
+            mockMenuIngredientRepository,
+            mockReviewRepository
+        );
+
+        // then
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            menuController.getMenuById(100L);
+        });
+    }
+
+    @Test
+    @DisplayName("메뉴를 아이디로 검색해서 결과가 있을 때, 결과가 나오는지 확인")
+    public void testIfMenuExistThenReturnMenu() {
+        // given
+        MenuCategory menuCategory = MenuCategory.builder()
+            .id(1L)
+            .name("한식")
+            .build();
+
+        Menu menu = Menu.builder()
+            .id(1L)
+            .name("메뉴")
+            .time(1)
+            .recipe("레시피")
+            .image("이미지")
+            .menuCategory(menuCategory)
+            .build();
+
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+        Mockito.when(mockMenuRepository.findById(1L))
+            .thenReturn(Optional.ofNullable(menu));
+
+        MenuIngredientRepository mockMenuIngredientRepository = Mockito.mock(
+            MenuIngredientRepository.class);
+        ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
+
+        // when
+        MenuController menuController = new MenuController(
+            mockMenuRepository,
+            mockMenuIngredientRepository,
+            mockReviewRepository
+        );
+        MenuDTO result = menuController.getMenuById(1L);
+
+        // then
+        Assertions.assertEquals(new MenuDTO(menu), result);
     }
 
 }
