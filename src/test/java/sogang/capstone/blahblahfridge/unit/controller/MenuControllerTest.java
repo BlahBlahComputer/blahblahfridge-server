@@ -14,8 +14,11 @@ import sogang.capstone.blahblahfridge.domain.IngredientCategory;
 import sogang.capstone.blahblahfridge.domain.Menu;
 import sogang.capstone.blahblahfridge.domain.MenuCategory;
 import sogang.capstone.blahblahfridge.domain.MenuIngredient;
+import sogang.capstone.blahblahfridge.domain.Review;
+import sogang.capstone.blahblahfridge.domain.User;
 import sogang.capstone.blahblahfridge.dto.MenuDTO;
 import sogang.capstone.blahblahfridge.dto.MenuIngredientDTO;
+import sogang.capstone.blahblahfridge.dto.ReviewDTO;
 import sogang.capstone.blahblahfridge.persistence.MenuIngredientRepository;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
@@ -169,10 +172,11 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        List<MenuIngredientDTO> menuIngredientList = menuController.getMenuIngredientByMenuId(1L);
+        List<MenuIngredientDTO> menuIngredientDTOList = menuController.getMenuIngredientByMenuId(
+            1L);
 
         // then
-        Assertions.assertEquals(new ArrayList<>(), menuIngredientList);
+        Assertions.assertEquals(new ArrayList<>(), menuIngredientDTOList);
     }
 
     @Test
@@ -229,5 +233,79 @@ public class MenuControllerTest {
 
         // then
         Assertions.assertEquals(menuIngredientDTOList, result);
+    }
+
+    @Test
+    @DisplayName("메뉴 아이디로 리뷰 조회 시 결과가 없을 때, 빈 배열로 나오는지 확인")
+    public void testIfReviewNotExistThenReturnEmptyList() {
+        // given
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+        MenuIngredientRepository mockMenuIngredientRepository = Mockito.mock(
+            MenuIngredientRepository.class);
+        ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
+        Mockito.when(mockReviewRepository.findAllByMenuId(1L))
+            .thenReturn(new ArrayList<>());
+
+        // when
+        MenuController menuController = new MenuController(
+            mockMenuRepository,
+            mockMenuIngredientRepository,
+            mockReviewRepository
+        );
+        List<ReviewDTO> reviewDTOList = menuController.getReviewByMenuId(1L);
+
+        // then
+        Assertions.assertEquals(new ArrayList<>(), reviewDTOList);
+    }
+
+    @Test
+    @DisplayName("메뉴 아이디로 리뷰 조회 시 결과가 있을 때, 결과가 나오는지 확인")
+    public void testIfReviewExistThenReturnReviewList() {
+        // given
+        MenuCategory menuCategory = MenuCategory.builder()
+            .id(1L)
+            .name("한식")
+            .build();
+        Menu menu = Menu.builder()
+            .id(1L)
+            .name("메뉴")
+            .time(1)
+            .recipe("레시피")
+            .image("이미지")
+            .menuCategory(menuCategory)
+            .build();
+
+        User user1 = User.builder().username("유저1").authenticationCode("123").provider("kakao")
+            .build();
+        User user2 = User.builder().username("유저2").authenticationCode("456").provider("kakao")
+            .build();
+
+        Review review1 = Review.builder().rate(5).content("굿").user(user1).menu(menu).build();
+        Review review2 = Review.builder().rate(1).content("밷").user(user2).menu(menu).build();
+        List<Review> reviewList = new ArrayList<Review>();
+        reviewList.add(review1);
+        reviewList.add(review2);
+
+        List<ReviewDTO> reviewDTOList = reviewList.stream()
+            .map(ReviewDTO::new)
+            .collect(Collectors.toList());
+
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+        MenuIngredientRepository mockMenuIngredientRepository = Mockito.mock(
+            MenuIngredientRepository.class);
+        ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
+        Mockito.when(mockReviewRepository.findAllByMenuId(1L))
+            .thenReturn(reviewList);
+
+        // when
+        MenuController menuController = new MenuController(
+            mockMenuRepository,
+            mockMenuIngredientRepository,
+            mockReviewRepository
+        );
+        List<ReviewDTO> result = menuController.getReviewByMenuId(1L);
+
+        // then
+        Assertions.assertEquals(reviewDTOList, result);
     }
 }

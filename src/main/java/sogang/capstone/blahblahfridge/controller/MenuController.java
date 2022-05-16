@@ -79,7 +79,7 @@ public class MenuController {
 
     @GetMapping(value = "/{id}/review", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public List<ReviewDTO> getReviewById(@PathVariable("id") Long id) {
+    public List<ReviewDTO> getReviewByMenuId(@PathVariable("id") Long id) {
         List<Review> reviewList = rRepo.findAllByMenuId(id);
         List<ReviewDTO> reviewDTOList = reviewList.stream()
             .map(ReviewDTO::new)
