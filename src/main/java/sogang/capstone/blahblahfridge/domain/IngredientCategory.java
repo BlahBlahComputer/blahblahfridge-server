@@ -8,6 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,4 +33,16 @@ public class IngredientCategory {
 
     @OneToMany(mappedBy = "category")
     private List<Ingredient> ingredients;
+
+    @Builder
+    public IngredientCategory(
+        Long id,
+        String name
+    ) {
+        if (name == null) {
+            throw new RuntimeException("이름은 필수값입니다.");
+        }
+        this.id = id;
+        this.name = name;
+    }
 }

@@ -68,7 +68,7 @@ public class MenuController {
 
     @GetMapping(value = "/{id}/ingredient", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public List<MenuIngredientDTO> getMenuIngredientById(@PathVariable("id") Long id) {
+    public List<MenuIngredientDTO> getMenuIngredientByMenuId(@PathVariable("id") Long id) {
         List<MenuIngredient> menuIngredientList = miRepo.findAllByMenuId(id);
         List<MenuIngredientDTO> menuIngredientDTOList = menuIngredientList.stream()
             .map(MenuIngredientDTO::new)

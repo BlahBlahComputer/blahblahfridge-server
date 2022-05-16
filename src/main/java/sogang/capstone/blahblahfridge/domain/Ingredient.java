@@ -10,6 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,4 +40,20 @@ public class Ingredient {
     @OneToMany(mappedBy = "ingredient")
     private List<MenuIngredient> menuIngredients;
 
+    @Builder
+    public Ingredient(
+        Long id,
+        String name,
+        IngredientCategory ingredientCategory
+    ) {
+        if (name == null) {
+            throw new RuntimeException("이름은 필수값입니다.");
+        }
+        if (ingredientCategory == null) {
+            throw new RuntimeException("카테고리는 필수값입니다.");
+        }
+        this.id = id;
+        this.name = name;
+        this.category = ingredientCategory;
+    }
 }
