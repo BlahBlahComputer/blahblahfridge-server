@@ -51,7 +51,7 @@ public class MenuControllerTest {
 
     @Test
     @DisplayName("메뉴를 조회 결과가 있을 때, 리스트가 나오는지 확인")
-    public void testIfListExistReturnList() {
+    public void testIfListExistReturnMenuList() {
         // given
         MenuCategory menuCategory = MenuCategory.builder()
             .id(1L)
@@ -89,6 +89,83 @@ public class MenuControllerTest {
         MenuDTO menuDTO = new MenuDTO(menu);
         List<MenuDTO> menuDTOList = new ArrayList<MenuDTO>();
         menuDTOList.add(menuDTO);
+        Assertions.assertEquals(menuDTOList, result);
+    }
+
+    @Test
+    @DisplayName("메뉴 이름 검색 시 결과가 없을 때, 빈 배열로 나오는지 확인")
+    public void testIfMenuNameNotExistThenReturnEmptyList() {
+        // given
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+        Mockito.when(mockMenuRepository.findAllByNameContaining("메뉴"))
+            .thenReturn(new ArrayList<>());
+
+        MenuIngredientRepository mockMenuIngredientRepository = Mockito.mock(
+            MenuIngredientRepository.class);
+        ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
+
+        // when
+        MenuController menuController = new MenuController(
+            mockMenuRepository,
+            mockMenuIngredientRepository,
+            mockReviewRepository
+        );
+        List<MenuDTO> result = menuController.getMenuByName("메뉴");
+
+        // then
+        Assertions.assertEquals(new ArrayList<>(), result);
+    }
+
+    @Test
+    @DisplayName("메뉴 이름 검색 시 결과가 있을 때, 리스트가 나오는지 확인")
+    public void testIfMenuNameExistReturnMenuList() {
+        // given
+        MenuCategory menuCategory = MenuCategory.builder()
+            .id(1L)
+            .name("한식")
+            .build();
+
+        Menu menu1 = Menu.builder()
+            .id(1L)
+            .name("메뉴1")
+            .time(1)
+            .recipe("레시피")
+            .image("이미지")
+            .menuCategory(menuCategory)
+            .build();
+        Menu menu2 = Menu.builder()
+            .id(1L)
+            .name("메뉴2")
+            .time(1)
+            .recipe("레시피")
+            .image("이미지")
+            .menuCategory(menuCategory)
+            .build();
+        List<Menu> menuList = new ArrayList<Menu>();
+        menuList.add(menu1);
+        menuList.add(menu2);
+
+        List<MenuDTO> menuDTOList = menuList.stream()
+            .map(MenuDTO::new)
+            .collect(Collectors.toList());
+
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+        Mockito.when(mockMenuRepository.findAllByNameContaining("메뉴"))
+            .thenReturn(menuList);
+
+        MenuIngredientRepository mockMenuIngredientRepository = Mockito.mock(
+            MenuIngredientRepository.class);
+        ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
+
+        // when
+        MenuController menuController = new MenuController(
+            mockMenuRepository,
+            mockMenuIngredientRepository,
+            mockReviewRepository
+        );
+        List<MenuDTO> result = menuController.getMenuByName("메뉴");
+
+        // then
         Assertions.assertEquals(menuDTOList, result);
     }
 

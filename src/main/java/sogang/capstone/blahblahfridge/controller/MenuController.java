@@ -44,14 +44,13 @@ public class MenuController {
 
     @GetMapping(value = "/search", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public MenuDTO getMenuByName(@RequestParam("name") String name) {
-        Optional<Menu> menu = repo.findByName(name);
-        if (menu.isEmpty()) {
-            throw new RuntimeException();
-        }
+    public List<MenuDTO> getMenuByName(@RequestParam("name") String name) {
+        List<Menu> menuList = repo.findAllByNameContaining(name);
+        List<MenuDTO> menuDTOList = menuList.stream()
+            .map(MenuDTO::new)
+            .collect(Collectors.toList());
 
-        MenuDTO menuDTO = new MenuDTO(menu.get());
-        return menuDTO;
+        return menuDTOList;
     }
 
     @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
