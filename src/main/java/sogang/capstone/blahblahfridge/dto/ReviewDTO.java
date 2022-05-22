@@ -1,12 +1,14 @@
 package sogang.capstone.blahblahfridge.dto;
 
 import java.sql.Timestamp;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import sogang.capstone.blahblahfridge.domain.Review;
 
 @Getter
 @ToString
+@EqualsAndHashCode
 public class ReviewDTO {
 
     private String username;

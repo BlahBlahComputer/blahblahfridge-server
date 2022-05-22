@@ -9,7 +9,7 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     public List<Menu> findAll();
 
-    public Optional<Menu> findByName(String name);
+    public List<Menu> findAllByNameContaining(String name);
 
     public Optional<Menu> findById(Long id);
 

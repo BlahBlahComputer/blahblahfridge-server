@@ -8,6 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,4 +42,29 @@ public class User extends AbstractTimestamp {
 
     @OneToMany(mappedBy = "user")
     private List<Review> reviews;
+
+    @Builder
+    public User(
+        Long id,
+        String username,
+        String image,
+        String authenticationCode,
+        String provider
+    ) {
+        if (username == null) {
+            throw new RuntimeException("이름은 필수값입니다.");
+        }
+        if (authenticationCode == null) {
+            throw new RuntimeException("인증 코드는 필수값입니다.");
+        }
+        if (provider == null) {
+            throw new RuntimeException("provider는 필수값입니다.");
+        }
+
+        this.id = id;
+        this.username = username;
+        this.image = image;
+        this.authenticationCode = authenticationCode;
+        this.provider = provider;
+    }
 }

@@ -10,6 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,4 +51,37 @@ public class Menu {
 
     @OneToMany(mappedBy = "menu")
     private List<Review> reviews;
+
+    @Builder
+    public Menu(
+        Long id,
+        String name,
+        Integer time,
+        String recipe,
+        String image,
+        MenuCategory menuCategory
+    ) {
+        if (name == null) {
+            throw new RuntimeException("이름은 필수값입니다.");
+        }
+        if (time == null) {
+            throw new RuntimeException("시간은 필수값입니다.");
+        }
+        if (recipe == null) {
+            throw new RuntimeException("레시피는 필수값입니다.");
+        }
+        if (image == null) {
+            throw new RuntimeException("사진은 필수값입니다.");
+        }
+        if (menuCategory == null) {
+            throw new RuntimeException("카테고리는 필수값입니다.");
+        }
+
+        this.id = id;
+        this.name = name;
+        this.time = time;
+        this.recipe = recipe;
+        this.image = image;
+        this.category = menuCategory;
+    }
 }

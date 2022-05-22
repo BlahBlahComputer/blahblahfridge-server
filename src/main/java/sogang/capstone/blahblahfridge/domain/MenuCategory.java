@@ -8,6 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,4 +34,12 @@ public class MenuCategory {
     @OneToMany(mappedBy = "category")
     private List<Menu> menus;
 
+    @Builder
+    public MenuCategory(Long id, String name) {
+        this.id = id;
+        if (name == null) {
+            throw new RuntimeException("이름은 필수값입니다.");
+        }
+        this.name = name;
+    }
 }
