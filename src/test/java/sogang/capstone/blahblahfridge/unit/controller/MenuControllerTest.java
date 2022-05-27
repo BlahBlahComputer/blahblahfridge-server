@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import sogang.capstone.blahblahfridge.config.CommonResponse;
 import sogang.capstone.blahblahfridge.controller.MenuController;
 import sogang.capstone.blahblahfridge.domain.Ingredient;
 import sogang.capstone.blahblahfridge.domain.IngredientCategory;
@@ -19,6 +20,7 @@ import sogang.capstone.blahblahfridge.domain.User;
 import sogang.capstone.blahblahfridge.dto.MenuDTO;
 import sogang.capstone.blahblahfridge.dto.MenuIngredientDTO;
 import sogang.capstone.blahblahfridge.dto.ReviewDTO;
+import sogang.capstone.blahblahfridge.exception.NotFoundException;
 import sogang.capstone.blahblahfridge.persistence.MenuIngredientRepository;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
@@ -43,10 +45,10 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        List<MenuDTO> result = menuController.findAllMenu();
+        CommonResponse<List<MenuDTO>> result = menuController.findAllMenu();
 
         // then
-        Assertions.assertEquals(new ArrayList<>(), result);
+        Assertions.assertEquals(CommonResponse.onSuccess(new ArrayList<>()), result);
     }
 
     @Test
@@ -83,13 +85,13 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        List<MenuDTO> result = menuController.findAllMenu();
+        CommonResponse<List<MenuDTO>> result = menuController.findAllMenu();
 
         // then
         MenuDTO menuDTO = new MenuDTO(menu);
         List<MenuDTO> menuDTOList = new ArrayList<MenuDTO>();
         menuDTOList.add(menuDTO);
-        Assertions.assertEquals(menuDTOList, result);
+        Assertions.assertEquals(CommonResponse.onSuccess(menuDTOList), result);
     }
 
     @Test
@@ -110,10 +112,10 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        List<MenuDTO> result = menuController.getMenuByName("메뉴");
+        CommonResponse<List<MenuDTO>> result = menuController.getMenuByName("메뉴");
 
         // then
-        Assertions.assertEquals(new ArrayList<>(), result);
+        Assertions.assertEquals(CommonResponse.onSuccess(new ArrayList<>()), result);
     }
 
     @Test
@@ -163,10 +165,10 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        List<MenuDTO> result = menuController.getMenuByName("메뉴");
+        CommonResponse<List<MenuDTO>> result = menuController.getMenuByName("메뉴");
 
         // then
-        Assertions.assertEquals(menuDTOList, result);
+        Assertions.assertEquals(CommonResponse.onSuccess(menuDTOList), result);
     }
 
     @Test
@@ -175,7 +177,7 @@ public class MenuControllerTest {
         // given
         MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
         Mockito.when(mockMenuRepository.findById(100L))
-            .thenThrow(new RuntimeException());
+            .thenThrow(new NotFoundException("해당 메뉴가 없습니다."));
 
         MenuIngredientRepository mockMenuIngredientRepository = Mockito.mock(
             MenuIngredientRepository.class);
@@ -189,7 +191,7 @@ public class MenuControllerTest {
         );
 
         // then
-        Assertions.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(NotFoundException.class, () -> {
             menuController.getMenuById(100L);
         });
     }
@@ -226,10 +228,10 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        MenuDTO result = menuController.getMenuById(1L);
+        CommonResponse<MenuDTO> result = menuController.getMenuById(1L);
 
         // then
-        Assertions.assertEquals(new MenuDTO(menu), result);
+        Assertions.assertEquals(CommonResponse.onSuccess(new MenuDTO(menu)), result);
     }
 
     @Test
@@ -249,11 +251,11 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        List<MenuIngredientDTO> menuIngredientDTOList = menuController.getMenuIngredientByMenuId(
+        CommonResponse<List<MenuIngredientDTO>> menuIngredientDTOList = menuController.getMenuIngredientByMenuId(
             1L);
 
         // then
-        Assertions.assertEquals(new ArrayList<>(), menuIngredientDTOList);
+        Assertions.assertEquals(CommonResponse.onSuccess(new ArrayList<>()), menuIngredientDTOList);
     }
 
     @Test
@@ -306,10 +308,11 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        List<MenuIngredientDTO> result = menuController.getMenuIngredientByMenuId(1L);
+        CommonResponse<List<MenuIngredientDTO>> result = menuController.getMenuIngredientByMenuId(
+            1L);
 
         // then
-        Assertions.assertEquals(menuIngredientDTOList, result);
+        Assertions.assertEquals(CommonResponse.onSuccess(menuIngredientDTOList), result);
     }
 
     @Test
@@ -329,10 +332,10 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        List<ReviewDTO> reviewDTOList = menuController.getReviewByMenuId(1L);
+        CommonResponse<List<ReviewDTO>> reviewDTOList = menuController.getReviewByMenuId(1L);
 
         // then
-        Assertions.assertEquals(new ArrayList<>(), reviewDTOList);
+        Assertions.assertEquals(CommonResponse.onSuccess(new ArrayList<>()), reviewDTOList);
     }
 
     @Test
@@ -380,9 +383,9 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        List<ReviewDTO> result = menuController.getReviewByMenuId(1L);
+        CommonResponse<List<ReviewDTO>> result = menuController.getReviewByMenuId(1L);
 
         // then
-        Assertions.assertEquals(reviewDTOList, result);
+        Assertions.assertEquals(CommonResponse.onSuccess(reviewDTOList), result);
     }
 }

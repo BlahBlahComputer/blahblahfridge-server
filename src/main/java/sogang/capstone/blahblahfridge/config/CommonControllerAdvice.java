@@ -11,12 +11,13 @@ public class CommonControllerAdvice {
 
     @ExceptionHandler(value = BaseException.class)
     public ResponseEntity onKnownException(BaseException baseException) {
-        return new ResponseEntity<>(baseException.getResponseMessage(), null,
-            baseException.getStatusCode());
+        return new ResponseEntity<>(CommonResponse.onFailure(baseException.getStatusCode(),
+            baseException.getResponseMessage()), null, baseException.getStatusCode());
     }
 
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity onException(Exception exception) {
-        return new ResponseEntity<>("서버 에러가 발생했습니다.", null, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(CommonResponse.onFailure(HttpStatus.INTERNAL_SERVER_ERROR,
+            "서버 에러가 발생했습니다."), null, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

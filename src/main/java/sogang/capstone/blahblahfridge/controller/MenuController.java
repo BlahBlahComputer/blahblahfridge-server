@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import sogang.capstone.blahblahfridge.config.CommonResponse;
 import sogang.capstone.blahblahfridge.domain.Menu;
 import sogang.capstone.blahblahfridge.domain.MenuIngredient;
 import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.dto.MenuDTO;
 import sogang.capstone.blahblahfridge.dto.MenuIngredientDTO;
 import sogang.capstone.blahblahfridge.dto.ReviewDTO;
+import sogang.capstone.blahblahfridge.exception.NotFoundException;
 import sogang.capstone.blahblahfridge.persistence.MenuIngredientRepository;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
@@ -33,57 +35,58 @@ public class MenuController {
 
     @GetMapping(produces = "application/json; charset=utf-8")
     @ResponseBody
-    public List<MenuDTO> findAllMenu() {
+    public CommonResponse<List<MenuDTO>> findAllMenu() {
         List<Menu> menuList = repo.findAll();
         List<MenuDTO> menuDTOList = menuList.stream()
             .map(MenuDTO::new)
             .collect(Collectors.toList());
 
-        return menuDTOList;
+        return CommonResponse.onSuccess(menuDTOList);
     }
 
     @GetMapping(value = "/search", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public List<MenuDTO> getMenuByName(@RequestParam("name") String name) {
+    public CommonResponse<List<MenuDTO>> getMenuByName(@RequestParam("name") String name) {
         List<Menu> menuList = repo.findAllByNameContaining(name);
         List<MenuDTO> menuDTOList = menuList.stream()
             .map(MenuDTO::new)
             .collect(Collectors.toList());
 
-        return menuDTOList;
+        return CommonResponse.onSuccess(menuDTOList);
     }
 
     @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public MenuDTO getMenuById(@PathVariable("id") Long id) {
+    public CommonResponse<MenuDTO> getMenuById(@PathVariable("id") Long id) {
         Optional<Menu> menu = repo.findById(id);
         if (menu.isEmpty()) {
-            throw new RuntimeException();
+            throw new NotFoundException("해당 메뉴가 없습니다.");
         }
 
         MenuDTO menuDTO = new MenuDTO(menu.get());
-        return menuDTO;
+        return CommonResponse.onSuccess(menuDTO);
     }
 
     @GetMapping(value = "/{id}/ingredient", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public List<MenuIngredientDTO> getMenuIngredientByMenuId(@PathVariable("id") Long id) {
+    public CommonResponse<List<MenuIngredientDTO>> getMenuIngredientByMenuId(
+        @PathVariable("id") Long id) {
         List<MenuIngredient> menuIngredientList = miRepo.findAllByMenuId(id);
         List<MenuIngredientDTO> menuIngredientDTOList = menuIngredientList.stream()
             .map(MenuIngredientDTO::new)
             .collect(Collectors.toList());
 
-        return menuIngredientDTOList;
+        return CommonResponse.onSuccess(menuIngredientDTOList);
     }
 
     @GetMapping(value = "/{id}/review", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public List<ReviewDTO> getReviewByMenuId(@PathVariable("id") Long id) {
+    public CommonResponse<List<ReviewDTO>> getReviewByMenuId(@PathVariable("id") Long id) {
         List<Review> reviewList = rRepo.findAllByMenuId(id);
         List<ReviewDTO> reviewDTOList = reviewList.stream()
             .map(ReviewDTO::new)
             .collect(Collectors.toList());
 
-        return reviewDTOList;
+        return CommonResponse.onSuccess(reviewDTOList);
     }
 }
