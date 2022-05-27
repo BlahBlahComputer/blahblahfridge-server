@@ -17,6 +17,7 @@ import sogang.capstone.blahblahfridge.domain.Menu;
 import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.domain.User;
 import sogang.capstone.blahblahfridge.dto.ReviewDTO;
+import sogang.capstone.blahblahfridge.exception.NotFoundException;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
 import sogang.capstone.blahblahfridge.persistence.UserRepository;
@@ -49,11 +50,11 @@ public class ReviewController {
 
         Optional<Menu> menu = mRepo.findById(reviewRequest.getMenuId());
         if (menu.isEmpty()) {
-            throw new RuntimeException();
+            throw new NotFoundException("해당 메뉴가 없습니다.");
         }
         Optional<User> user = uRepo.findById(reviewRequest.getUserId());
         if (user.isEmpty()) {
-            throw new RuntimeException();
+            throw new NotFoundException("해당 유저가 없습니다.");
         }
 
         Review review = Review.builder()
