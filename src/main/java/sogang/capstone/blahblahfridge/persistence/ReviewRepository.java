@@ -11,6 +11,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     public List<Review> findAllByMenuId(Long id);
 
     public Optional<Review> findById(Long id);
-    
-    public void delete(Optional<Review> review);
+
+    public void delete(Review review);
 }
