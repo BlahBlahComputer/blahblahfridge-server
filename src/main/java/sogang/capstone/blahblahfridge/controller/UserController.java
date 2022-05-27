@@ -1,6 +1,8 @@
 package sogang.capstone.blahblahfridge.controller;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
@@ -14,9 +16,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import sogang.capstone.blahblahfridge.config.CommonResponse;
 import sogang.capstone.blahblahfridge.controller.request.UserImageRequest;
 import sogang.capstone.blahblahfridge.controller.request.UserNameRequest;
+import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.domain.User;
+import sogang.capstone.blahblahfridge.dto.ReviewDTO;
 import sogang.capstone.blahblahfridge.dto.UserDTO;
 import sogang.capstone.blahblahfridge.exception.NotFoundException;
+import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
 import sogang.capstone.blahblahfridge.persistence.UserRepository;
 
 @Log
@@ -27,6 +32,7 @@ import sogang.capstone.blahblahfridge.persistence.UserRepository;
 public class UserController {
 
     UserRepository repo;
+    ReviewRepository rRepo;
 
     @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
     @ResponseBody
@@ -72,5 +78,20 @@ public class UserController {
 
         UserDTO userDTO = new UserDTO(user.get());
         return CommonResponse.onSuccess(userDTO);
+    }
+
+    @GetMapping(value = "/{id}/review", produces = "application/json; charset=utf-8")
+    @ResponseBody
+    public CommonResponse<List<ReviewDTO>> getUserReviewById(@PathVariable("id") Long id) {
+        Optional<User> user = repo.findById(id);
+        if (user.isEmpty()) {
+            throw new NotFoundException("해당 유저가 없습니다.");
+        }
+        List<Review> reviewList = rRepo.findAllByUserId(user.get().getId());
+        List<ReviewDTO> reviewDTOList = reviewList.stream()
+            .map(ReviewDTO::new)
+            .collect(Collectors.toList());
+
+        return CommonResponse.onSuccess(reviewDTOList);
     }
 }
