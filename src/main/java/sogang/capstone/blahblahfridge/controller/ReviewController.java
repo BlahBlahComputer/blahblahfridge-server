@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import sogang.capstone.blahblahfridge.config.CommonResponse;
 import sogang.capstone.blahblahfridge.controller.request.ReviewRequest;
 import sogang.capstone.blahblahfridge.domain.Menu;
 import sogang.capstone.blahblahfridge.domain.Review;
@@ -34,19 +35,19 @@ public class ReviewController {
 
     @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public ReviewDTO getReviewById(@PathVariable("id") Long id) {
+    public CommonResponse<ReviewDTO> getReviewById(@PathVariable("id") Long id) {
         Optional<Review> review = repo.findById(id);
         if (review.isEmpty()) {
-            throw new RuntimeException();
+            throw new NotFoundException("해당 리뷰가 없습니다.");
         }
 
         ReviewDTO reviewDTO = new ReviewDTO(review.get());
-        return reviewDTO;
+        return CommonResponse.onSuccess(reviewDTO);
     }
 
     @PostMapping(produces = "application/json; charset=utf-8")
     @ResponseBody
-    public ReviewDTO postReview(@Valid @RequestBody ReviewRequest reviewRequest) {
+    public CommonResponse<ReviewDTO> postReview(@Valid @RequestBody ReviewRequest reviewRequest) {
 
         Optional<Menu> menu = mRepo.findById(reviewRequest.getMenuId());
         if (menu.isEmpty()) {
@@ -67,6 +68,6 @@ public class ReviewController {
         repo.save(review);
 
         ReviewDTO reviewDTO = new ReviewDTO(review);
-        return reviewDTO;
+        return CommonResponse.onSuccess(reviewDTO);
     }
 }
