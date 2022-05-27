@@ -11,7 +11,9 @@ import sogang.capstone.blahblahfridge.domain.MenuCategory;
 import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.domain.User;
 import sogang.capstone.blahblahfridge.dto.ReviewDTO;
+import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
+import sogang.capstone.blahblahfridge.persistence.UserRepository;
 
 public class ReviewControllerTest {
 
@@ -23,9 +25,14 @@ public class ReviewControllerTest {
         Mockito.when(mockReviewRepository.findById(100L))
             .thenThrow(new RuntimeException());
 
+        UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+
         // when
         ReviewController reviewController = new ReviewController(
-            mockReviewRepository
+            mockReviewRepository,
+            mockUserRepository,
+            mockMenuRepository
         );
 
         // then
@@ -61,9 +68,14 @@ public class ReviewControllerTest {
         Mockito.when(mockReviewRepository.findById(1L))
             .thenReturn(Optional.ofNullable(review));
 
+        UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+
         // when
         ReviewController reviewController = new ReviewController(
-            mockReviewRepository
+            mockReviewRepository,
+            mockUserRepository,
+            mockMenuRepository
         );
         ReviewDTO result = reviewController.getReviewById(1L);
 
