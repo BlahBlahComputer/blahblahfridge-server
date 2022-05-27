@@ -6,6 +6,7 @@ import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -70,4 +71,17 @@ public class ReviewController {
         ReviewDTO reviewDTO = new ReviewDTO(review);
         return CommonResponse.onSuccess(reviewDTO);
     }
+
+    @DeleteMapping(value = "/{id}", produces = "application/json; charset=utf-8")
+    @ResponseBody
+    public CommonResponse deleteReviewById(@PathVariable("id") Long id) {
+        Optional<Review> review = repo.findById(id);
+        if (review.isEmpty()) {
+            throw new NotFoundException("해당 리뷰가 없습니다.");
+        }
+        repo.delete(review.get());
+
+        return CommonResponse.onSuccess(null);
+    }
+
 }
