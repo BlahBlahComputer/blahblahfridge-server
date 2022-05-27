@@ -12,6 +12,7 @@ import sogang.capstone.blahblahfridge.domain.Review;
 public class ReviewDTO {
 
     private String username;
+    private String userimage;
     private String image;
     private String content;
     private Integer rate;
@@ -19,6 +20,7 @@ public class ReviewDTO {
 
     public ReviewDTO(Review review) {
         this.username = review.getUser().getUsername();
+        this.userimage = review.getUser().getImage();
         this.image = review.getImage();
         this.content = review.getContent();
         this.rate = review.getRate();
