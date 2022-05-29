@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import sogang.capstone.blahblahfridge.config.CommonResponse;
 import sogang.capstone.blahblahfridge.dto.KakaoTokenDTO;
+import sogang.capstone.blahblahfridge.dto.KakaoUserDTO;
 import sogang.capstone.blahblahfridge.exception.BadRequestException;
 import sogang.capstone.blahblahfridge.persistence.UserRepository;
 
@@ -52,20 +53,29 @@ public class KakaoController {
     @ResponseBody
     public CommonResponse getKakaoAccessToken(@RequestParam("code") String code) {
 
-        String reqURL =
+        String getTokenURL =
             "https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id="
                 + KAKAO_KEY + "&redirect_uri=" + KAKAO_URI + "&code=" + code;
-        String accessToken = "";
-        String refreshToken = "";
 
-        KakaoTokenDTO kakaoTokenDTO = (KakaoTokenDTO) webClient.post().uri(reqURL).retrieve()
+        KakaoTokenDTO kakaoTokenDTO = (KakaoTokenDTO) webClient.post().uri(getTokenURL).retrieve()
             .onStatus(HttpStatus::is4xxClientError,
                 clientResponse -> Mono.error(new BadRequestException("잘못된 요청입니다.")))
             .bodyToMono(
                 ParameterizedTypeReference.forType(KakaoTokenDTO.class))
             .block();
 
-        return CommonResponse.onSuccess(kakaoTokenDTO);
+        String getUserURL = "https://kapi.kakao.com/v2/user/me";
+
+        KakaoUserDTO kakaoUserDTO = (KakaoUserDTO) webClient.post().uri(getUserURL)
+            .header("Authorization", "Bearer " + kakaoTokenDTO.getAccessToken())
+            .retrieve()
+            .onStatus(HttpStatus::is4xxClientError,
+                clientResponse -> Mono.error(new BadRequestException("잘못된 요청입니다.")))
+            .bodyToMono(
+                ParameterizedTypeReference.forType(KakaoUserDTO.class))
+            .block();
+        
+        return CommonResponse.onSuccess(kakaoUserDTO);
     }
 
 }

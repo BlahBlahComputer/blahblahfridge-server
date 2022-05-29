@@ -12,12 +12,10 @@ import lombok.ToString;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class KakaoTokenDTO {
+public class KakaoProfileDTO {
 
-    @JsonProperty("access_token")
-    private String accessToken;
+    private String nickname;
 
-    @JsonProperty("refresh_token")
-    private String refreshToken;
-    
+    @JsonProperty("thumbnail_image_url")
+    private String imageUrl;
 }
