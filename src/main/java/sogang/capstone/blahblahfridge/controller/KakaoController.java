@@ -3,6 +3,7 @@ package sogang.capstone.blahblahfridge.controller;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,8 +19,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import sogang.capstone.blahblahfridge.config.CommonResponse;
+import sogang.capstone.blahblahfridge.domain.User;
 import sogang.capstone.blahblahfridge.dto.KakaoTokenDTO;
 import sogang.capstone.blahblahfridge.dto.KakaoUserDTO;
+import sogang.capstone.blahblahfridge.dto.UserDTO;
 import sogang.capstone.blahblahfridge.exception.BadRequestException;
 import sogang.capstone.blahblahfridge.persistence.UserRepository;
 
@@ -51,7 +54,7 @@ public class KakaoController {
 
     @PostMapping(value = "/login", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse getKakaoAccessToken(@RequestParam("code") String code) {
+    public CommonResponse<UserDTO> postKakaoLogin(@RequestParam("code") String code) {
 
         String getTokenURL =
             "https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id="
@@ -74,8 +77,14 @@ public class KakaoController {
             .bodyToMono(
                 ParameterizedTypeReference.forType(KakaoUserDTO.class))
             .block();
-        
-        return CommonResponse.onSuccess(kakaoUserDTO);
+
+        Optional<User> user = repo.findByAuthenticationCode(kakaoUserDTO.getAuthenticationCode());
+        if (user.isEmpty()) {
+            return CommonResponse.onSuccess(null); // 다시 하세요~!
+        }
+        UserDTO userDTO = new UserDTO(user.get());
+
+        return CommonResponse.onSuccess(userDTO);
     }
 
 }

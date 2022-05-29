@@ -15,7 +15,8 @@ import lombok.ToString;
 @AllArgsConstructor
 public class KakaoUserDTO {
 
-    private Long id;
+    @JsonProperty("id")
+    private String authenticationCode;
 
     @JsonProperty("connected_at")
     private Timestamp connectedAt;
