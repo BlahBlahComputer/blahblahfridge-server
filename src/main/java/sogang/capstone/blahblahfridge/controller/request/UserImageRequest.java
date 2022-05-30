@@ -7,22 +7,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @Getter
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReviewRequest {
+public class UserImageRequest {
 
-    @NotNull(message = "rate may not be null")
-    Integer rate;
-    @NotNull(message = "content may not be null")
-    String content;
+    @NotNull(message = "image may not be null")
     String image;
-    @NotNull(message = "userId may not be null")
-    Long userId;
-    @NotNull(message = "menuId may not be null")
-    Long menuId;
-
 }
