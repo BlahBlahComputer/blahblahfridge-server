@@ -1,8 +1,5 @@
 package sogang.capstone.blahblahfridge.controller;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Optional;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +9,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,18 +37,6 @@ public class KakaoController {
     private String KAKAO_KEY;
     @Value("${kakao.uri}")
     private String KAKAO_URI;
-
-    @GetMapping(value = "/kakaologin")
-    public String kakaologin() throws IOException {
-        String newURL =
-            "https://kauth.kakao.com/oauth/authorize?client_id=" + KAKAO_KEY + "&redirect_uri="
-                + KAKAO_URI + "&response_type=code";
-        URL url = new URL(newURL);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setDoOutput(true);
-        return newURL;
-    }
 
     @PostMapping(value = "/login", produces = "application/json; charset=utf-8")
     @ResponseBody
@@ -84,8 +68,8 @@ public class KakaoController {
         if (user.isEmpty()) {
             return CommonResponse.onSuccess(kakaoTokenDTO);
         }
-        UserDTO userDTO = new UserDTO(user.get());
 
+        UserDTO userDTO = new UserDTO(user.get());
         return CommonResponse.onSuccess(userDTO);
     }
 
