@@ -42,12 +42,13 @@ public class NaverController {
 
     @PostMapping(value = "/login", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse postNaverLogin(@RequestParam("code") String code) {
+    public CommonResponse postNaverLogin(@RequestParam("code") String code,
+        @RequestParam("state") String state) {
 
         String getTokenURL =
             "https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id="
                 + NAVER_KEY + "&client_secret=" + NAVER_SECRET + "&redirect_uri=" + NAVER_URI
-                + "&code=" + code + "&state=RANDOM_STATE";
+                + "&code=" + code + "&state=" + state;
 
         NaverTokenDTO naverTokenDTO = (NaverTokenDTO) webClient.post().uri(getTokenURL).retrieve()
             .onStatus(HttpStatus::is4xxClientError,
