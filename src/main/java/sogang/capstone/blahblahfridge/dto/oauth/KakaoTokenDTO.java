@@ -1,4 +1,4 @@
-package sogang.capstone.blahblahfridge.dto;
+package sogang.capstone.blahblahfridge.dto.oauth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.NotNull;
@@ -13,7 +13,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class NaverTokenDTO {
+public class KakaoTokenDTO {
 
     @NotNull(message = "accessToken may not be null")
     @JsonProperty("access_token")
@@ -22,4 +22,5 @@ public class NaverTokenDTO {
     @NotNull(message = "refreshToken may not be null")
     @JsonProperty("refresh_token")
     private String refreshToken;
+
 }

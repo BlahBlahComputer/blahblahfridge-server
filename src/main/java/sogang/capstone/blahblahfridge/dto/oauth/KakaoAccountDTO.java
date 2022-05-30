@@ -1,4 +1,4 @@
-package sogang.capstone.blahblahfridge.dto;
+package sogang.capstone.blahblahfridge.dto.oauth;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

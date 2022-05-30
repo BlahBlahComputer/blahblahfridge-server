@@ -18,9 +18,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import sogang.capstone.blahblahfridge.config.CommonResponse;
 import sogang.capstone.blahblahfridge.domain.User;
-import sogang.capstone.blahblahfridge.dto.KakaoTokenDTO;
-import sogang.capstone.blahblahfridge.dto.KakaoUserDTO;
 import sogang.capstone.blahblahfridge.dto.UserDTO;
+import sogang.capstone.blahblahfridge.dto.oauth.KakaoTokenDTO;
+import sogang.capstone.blahblahfridge.dto.oauth.KakaoUserDTO;
 import sogang.capstone.blahblahfridge.exception.BadRequestException;
 import sogang.capstone.blahblahfridge.persistence.UserRepository;
 

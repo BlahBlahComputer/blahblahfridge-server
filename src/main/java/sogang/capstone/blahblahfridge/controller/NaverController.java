@@ -18,9 +18,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import sogang.capstone.blahblahfridge.config.CommonResponse;
 import sogang.capstone.blahblahfridge.domain.User;
-import sogang.capstone.blahblahfridge.dto.NaverTokenDTO;
-import sogang.capstone.blahblahfridge.dto.NaverUserDTO;
 import sogang.capstone.blahblahfridge.dto.UserDTO;
+import sogang.capstone.blahblahfridge.dto.oauth.NaverTokenDTO;
+import sogang.capstone.blahblahfridge.dto.oauth.NaverUserDTO;
 import sogang.capstone.blahblahfridge.exception.BadRequestException;
 import sogang.capstone.blahblahfridge.persistence.UserRepository;
 

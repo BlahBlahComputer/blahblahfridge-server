@@ -1,4 +1,4 @@
-package sogang.capstone.blahblahfridge.dto;
+package sogang.capstone.blahblahfridge.dto.oauth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -12,14 +12,10 @@ import lombok.ToString;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class NaverProfileDTO {
+public class KakaoProfileDTO {
 
-    @JsonProperty("id")
-    private String authenticationCode;
-
-    @JsonProperty("name")
     private String nickname;
 
-    @JsonProperty("profile_image")
+    @JsonProperty("thumbnail_image_url")
     private String imageUrl;
 }
