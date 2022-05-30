@@ -1,6 +1,7 @@
 package sogang.capstone.blahblahfridge.controller;
 
 import java.util.Optional;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +10,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -73,6 +75,45 @@ public class NaverController {
 
         UserDTO userDTO = new UserDTO(user.get());
         return CommonResponse.onSuccess(userDTO);
+    }
+
+    @PostMapping(value = "/register", produces = "application/json; charset=utf-8")
+    @ResponseBody
+    public CommonResponse<UserDTO> postNaverRegister(
+        @Valid @RequestBody NaverTokenDTO naverTokenDTO) {
+
+        String getUserURL = "https://openapi.naver.com/v1/nid/me";
+
+        NaverUserDTO naverUserDTO = (NaverUserDTO) webClient.post().uri(getUserURL)
+            .header("Authorization", "Bearer " + naverTokenDTO.getAccessToken())
+            .retrieve()
+            .onStatus(HttpStatus::is4xxClientError,
+                clientResponse -> Mono.error(new BadRequestException("잘못된 요청입니다.")))
+            .bodyToMono(
+                ParameterizedTypeReference.forType(NaverUserDTO.class))
+            .block();
+
+        Optional<User> checkUser = repo.findByAuthenticationCode(
+            naverUserDTO.getResponse().getAuthenticationCode());
+        if (checkUser.isPresent()) {
+            return CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "이미 존재하는 유저입니다."); // 다시 하세요~!
+        }
+        Optional<User> checkUserNickName = repo.findByAuthenticationCode(
+            naverUserDTO.getResponse().getAuthenticationCode());
+        if (checkUser.isPresent()) {
+            return CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."); // 다시 하세요~!
+        }
+
+        User newUser = User.builder()
+            .username(naverUserDTO.getResponse().getNickname())
+            .image(naverUserDTO.getResponse().getImageUrl())
+            .authenticationCode(naverUserDTO.getResponse().getAuthenticationCode())
+            .provider("naver")
+            .build();
+        repo.save(newUser);
+
+        UserDTO newUserDTO = new UserDTO(newUser);
+        return CommonResponse.onSuccess(newUserDTO);
     }
 
 }
