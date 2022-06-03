@@ -10,6 +10,7 @@ import sogang.capstone.blahblahfridge.domain.Menu;
 @EqualsAndHashCode
 public class MenuDTO {
 
+    private Long id;
     private String image;
     private String name;
     private String recipe;
@@ -17,6 +18,7 @@ public class MenuDTO {
     private String category;
 
     public MenuDTO(Menu menu) {
+        this.id = menu.getId();
         this.image = menu.getImage();
         this.name = menu.getName();
         this.recipe = menu.getRecipe();

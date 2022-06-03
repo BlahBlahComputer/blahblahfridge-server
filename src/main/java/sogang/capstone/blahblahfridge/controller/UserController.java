@@ -85,20 +85,15 @@ public class UserController {
     @ResponseBody
     public CommonResponse<List<ReviewDTO>> getUserReviewById(
         @AuthenticationPrincipal User authUser) {
-        try {
-            Optional<User> user = repo.findById(authUser.getId());
-            if (user.isEmpty()) {
-                throw new NotFoundException("해당 유저가 없습니다.");
-            }
-            List<Review> reviewList = rRepo.findAllByUserId(user.get().getId());
-            List<ReviewDTO> reviewDTOList = reviewList.stream()
-                .map(ReviewDTO::new)
-                .collect(Collectors.toList());
-
-//            return CommonResponse.onSuccess(reviewDTOList);
-        } catch (Exception e) {
-            System.out.println(e);
+        Optional<User> user = repo.findById(authUser.getId());
+        if (user.isEmpty()) {
+            throw new NotFoundException("해당 유저가 없습니다.");
         }
-        return CommonResponse.onSuccess(null);
+        List<Review> reviewList = rRepo.findAllByUserId(user.get().getId());
+        List<ReviewDTO> reviewDTOList = reviewList.stream()
+            .map(ReviewDTO::new)
+            .collect(Collectors.toList());
+
+        return CommonResponse.onSuccess(reviewDTOList);
     }
 }
