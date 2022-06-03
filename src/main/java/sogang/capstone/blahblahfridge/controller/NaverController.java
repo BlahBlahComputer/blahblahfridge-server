@@ -18,11 +18,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import sogang.capstone.blahblahfridge.config.CommonResponse;
 import sogang.capstone.blahblahfridge.domain.User;
-import sogang.capstone.blahblahfridge.dto.UserDTO;
+import sogang.capstone.blahblahfridge.dto.TokenDTO;
 import sogang.capstone.blahblahfridge.dto.oauth.NaverTokenDTO;
 import sogang.capstone.blahblahfridge.dto.oauth.NaverUserDTO;
 import sogang.capstone.blahblahfridge.exception.BadRequestException;
 import sogang.capstone.blahblahfridge.persistence.UserRepository;
+import sogang.capstone.blahblahfridge.service.JwtTokenServiceImpl;
 
 @Log
 @Controller
@@ -33,6 +34,8 @@ public class NaverController {
 
     private final UserRepository repo;
     private final WebClient webClient;
+    private final JwtTokenServiceImpl jwtTokenServiceImpl;
+
     @Value("${naver.key}")
     private String NAVER_KEY;
     @Value("${naver.secret}")
@@ -74,13 +77,13 @@ public class NaverController {
             return CommonResponse.onSuccess(naverTokenDTO);
         }
 
-        UserDTO userDTO = new UserDTO(user.get());
-        return CommonResponse.onSuccess(userDTO);
+        TokenDTO tokenDTO = new TokenDTO(user.get().getId());
+        return CommonResponse.onSuccess(jwtTokenServiceImpl.encodeJwtToken(tokenDTO));
     }
 
     @PostMapping(value = "/register", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse<UserDTO> postNaverRegister(
+    public CommonResponse postNaverRegister(
         @Valid @RequestBody NaverTokenDTO naverTokenDTO) {
 
         String getUserURL = "https://openapi.naver.com/v1/nid/me";
@@ -113,8 +116,8 @@ public class NaverController {
             .build();
         repo.save(newUser);
 
-        UserDTO newUserDTO = new UserDTO(newUser);
-        return CommonResponse.onSuccess(newUserDTO);
+        TokenDTO tokenDTO = new TokenDTO(newUser.getId());
+        return CommonResponse.onSuccess(jwtTokenServiceImpl.encodeJwtToken(tokenDTO));
     }
 
 }

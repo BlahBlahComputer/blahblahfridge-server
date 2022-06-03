@@ -10,4 +10,8 @@ import lombok.ToString;
 public class TokenDTO {
 
     Long id;
+
+    public TokenDTO(Long id) {
+        this.id = id;
+    }
 }

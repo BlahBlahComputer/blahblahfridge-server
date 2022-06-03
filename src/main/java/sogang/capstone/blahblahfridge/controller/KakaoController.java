@@ -9,6 +9,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,27 +19,30 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import sogang.capstone.blahblahfridge.config.CommonResponse;
 import sogang.capstone.blahblahfridge.domain.User;
-import sogang.capstone.blahblahfridge.dto.UserDTO;
+import sogang.capstone.blahblahfridge.dto.TokenDTO;
 import sogang.capstone.blahblahfridge.dto.oauth.KakaoTokenDTO;
 import sogang.capstone.blahblahfridge.dto.oauth.KakaoUserDTO;
 import sogang.capstone.blahblahfridge.exception.BadRequestException;
 import sogang.capstone.blahblahfridge.persistence.UserRepository;
+import sogang.capstone.blahblahfridge.service.JwtTokenServiceImpl;
 
 @Log
 @Controller
 @RequestMapping("/kakao")
 @RequiredArgsConstructor
 @PropertySource("classpath:/application.properties")
+
 public class KakaoController {
 
     private final UserRepository repo;
     private final WebClient webClient;
+    private final JwtTokenServiceImpl jwtTokenServiceImpl;
     @Value("${kakao.key}")
     private String KAKAO_KEY;
     @Value("${kakao.uri}")
     private String KAKAO_URI;
 
-    @PostMapping(value = "/login", produces = "application/json; charset=utf-8")
+    @GetMapping(value = "/login", produces = "application/json; charset=utf-8")
     @ResponseBody
     public CommonResponse postKakaoLogin(@RequestParam("code") String code) {
 
@@ -69,13 +73,13 @@ public class KakaoController {
             return CommonResponse.onSuccess(kakaoTokenDTO);
         }
 
-        UserDTO userDTO = new UserDTO(user.get());
-        return CommonResponse.onSuccess(userDTO);
+        TokenDTO tokenDTO = new TokenDTO(user.get().getId());
+        return CommonResponse.onSuccess(jwtTokenServiceImpl.encodeJwtToken(tokenDTO));
     }
 
     @PostMapping(value = "/register", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse<UserDTO> postKakaoRegister(
+    public CommonResponse postKakaoRegister(
         @Valid @RequestBody KakaoTokenDTO kakaoTokenDTO) {
 
         String getUserURL = "https://kapi.kakao.com/v2/user/me";
@@ -103,7 +107,7 @@ public class KakaoController {
             .build();
         repo.save(newUser);
 
-        UserDTO newUserDTO = new UserDTO(newUser);
-        return CommonResponse.onSuccess(newUserDTO);
+        TokenDTO tokenDTO = new TokenDTO(newUser.getId());
+        return CommonResponse.onSuccess(jwtTokenServiceImpl.encodeJwtToken(tokenDTO));
     }
 }
