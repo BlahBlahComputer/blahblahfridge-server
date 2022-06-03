@@ -9,7 +9,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,7 +41,7 @@ public class KakaoController {
     @Value("${kakao.uri}")
     private String KAKAO_URI;
 
-    @GetMapping(value = "/login", produces = "application/json; charset=utf-8")
+    @PostMapping(value = "/login", produces = "application/json; charset=utf-8")
     @ResponseBody
     public CommonResponse postKakaoLogin(@RequestParam("code") String code) {
 
