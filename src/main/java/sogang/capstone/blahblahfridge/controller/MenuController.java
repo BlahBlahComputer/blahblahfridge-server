@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +19,6 @@ import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.dto.MenuDTO;
 import sogang.capstone.blahblahfridge.dto.MenuIngredientDTO;
 import sogang.capstone.blahblahfridge.dto.ReviewDTO;
-import sogang.capstone.blahblahfridge.exception.NotFoundException;
 import sogang.capstone.blahblahfridge.persistence.MenuIngredientRepository;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
@@ -57,7 +57,7 @@ public class MenuController {
     public CommonResponse<MenuDTO> getMenuById(@PathVariable("id") Long id) {
         Optional<Menu> menu = repo.findById(id);
         if (menu.isEmpty()) {
-            throw new NotFoundException("해당 메뉴가 없습니다.");
+            return CommonResponse.onFailure(HttpStatus.NOT_FOUND, "해당 메뉴가 없습니다.");
         }
 
         MenuDTO menuDTO = new MenuDTO(menu.get());

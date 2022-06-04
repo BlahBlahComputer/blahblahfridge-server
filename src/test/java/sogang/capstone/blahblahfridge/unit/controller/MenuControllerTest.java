@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
 import sogang.capstone.blahblahfridge.config.CommonResponse;
 import sogang.capstone.blahblahfridge.controller.MenuController;
 import sogang.capstone.blahblahfridge.domain.Ingredient;
@@ -20,7 +21,6 @@ import sogang.capstone.blahblahfridge.domain.User;
 import sogang.capstone.blahblahfridge.dto.MenuDTO;
 import sogang.capstone.blahblahfridge.dto.MenuIngredientDTO;
 import sogang.capstone.blahblahfridge.dto.ReviewDTO;
-import sogang.capstone.blahblahfridge.exception.NotFoundException;
 import sogang.capstone.blahblahfridge.persistence.MenuIngredientRepository;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
@@ -178,7 +178,7 @@ public class MenuControllerTest {
         // given
         MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
         Mockito.when(mockMenuRepository.findById(100L))
-            .thenThrow(new NotFoundException("해당 메뉴가 없습니다."));
+            .thenReturn(Optional.ofNullable(null));
 
         MenuIngredientRepository mockMenuIngredientRepository = Mockito.mock(
             MenuIngredientRepository.class);
@@ -192,9 +192,9 @@ public class MenuControllerTest {
         );
 
         // then
-        Assertions.assertThrows(NotFoundException.class, () -> {
-            menuController.getMenuById(100L);
-        });
+        CommonResponse result = menuController.getMenuById(100L);
+        Assertions.assertEquals(CommonResponse.onFailure(HttpStatus.NOT_FOUND, "해당 메뉴가 없습니다."),
+            result);
     }
 
     @Test
