@@ -35,25 +35,22 @@ public class MenuController {
 
     @GetMapping(produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse<List<MenuDTO>> findAllMenu() {
-        List<Menu> menuList = repo.findAll();
-        List<MenuDTO> menuDTOList = menuList.stream()
-            .map(MenuDTO::new)
-            .collect(Collectors.toList());
-
-        return CommonResponse.onSuccess(menuDTOList);
+    public CommonResponse<List<MenuDTO>> findAllMenu(@RequestParam("name") String name) {
+        if (name != null) {
+            List<Menu> menuList = repo.findAllByNameContaining(name);
+            List<MenuDTO> menuDTOList = menuList.stream()
+                .map(MenuDTO::new)
+                .collect(Collectors.toList());
+            return CommonResponse.onSuccess(menuDTOList);
+        } else {
+            List<Menu> menuList = repo.findAll();
+            List<MenuDTO> menuDTOList = menuList.stream()
+                .map(MenuDTO::new)
+                .collect(Collectors.toList());
+            return CommonResponse.onSuccess(menuDTOList);
+        }
     }
 
-    @GetMapping(value = "/search", produces = "application/json; charset=utf-8")
-    @ResponseBody
-    public CommonResponse<List<MenuDTO>> getMenuByName(@RequestParam("name") String name) {
-        List<Menu> menuList = repo.findAllByNameContaining(name);
-        List<MenuDTO> menuDTOList = menuList.stream()
-            .map(MenuDTO::new)
-            .collect(Collectors.toList());
-
-        return CommonResponse.onSuccess(menuDTOList);
-    }
 
     @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
     @ResponseBody

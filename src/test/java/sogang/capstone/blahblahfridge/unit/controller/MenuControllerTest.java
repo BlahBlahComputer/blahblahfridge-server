@@ -45,7 +45,7 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        CommonResponse<List<MenuDTO>> result = menuController.findAllMenu();
+        CommonResponse<List<MenuDTO>> result = menuController.findAllMenu(null);
 
         // then
         Assertions.assertEquals(CommonResponse.onSuccess(new ArrayList<>()), result);
@@ -85,12 +85,13 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        CommonResponse<List<MenuDTO>> result = menuController.findAllMenu();
+        CommonResponse<List<MenuDTO>> result = menuController.findAllMenu(null);
 
         // then
         MenuDTO menuDTO = new MenuDTO(menu);
         List<MenuDTO> menuDTOList = new ArrayList<MenuDTO>();
         menuDTOList.add(menuDTO);
+
         Assertions.assertEquals(CommonResponse.onSuccess(menuDTOList), result);
     }
 
@@ -99,7 +100,7 @@ public class MenuControllerTest {
     public void testIfMenuNameNotExistThenReturnEmptyList() {
         // given
         MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
-        Mockito.when(mockMenuRepository.findAllByNameContaining("메뉴"))
+        Mockito.when(mockMenuRepository.findAllByNameContaining("된장찌개"))
             .thenReturn(new ArrayList<>());
 
         MenuIngredientRepository mockMenuIngredientRepository = Mockito.mock(
@@ -112,7 +113,7 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        CommonResponse<List<MenuDTO>> result = menuController.getMenuByName("메뉴");
+        CommonResponse<List<MenuDTO>> result = menuController.findAllMenu("된장찌개");
 
         // then
         Assertions.assertEquals(CommonResponse.onSuccess(new ArrayList<>()), result);
@@ -165,7 +166,7 @@ public class MenuControllerTest {
             mockMenuIngredientRepository,
             mockReviewRepository
         );
-        CommonResponse<List<MenuDTO>> result = menuController.getMenuByName("메뉴");
+        CommonResponse<List<MenuDTO>> result = menuController.findAllMenu("메뉴");
 
         // then
         Assertions.assertEquals(CommonResponse.onSuccess(menuDTOList), result);
