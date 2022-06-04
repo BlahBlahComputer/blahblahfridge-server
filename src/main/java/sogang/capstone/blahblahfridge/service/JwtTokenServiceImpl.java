@@ -35,7 +35,7 @@ public class JwtTokenServiceImpl implements JwtTokenService {
             .setIssuer("blah")
             .setIssuedAt(now)
             .setSubject(tokenDTO.getId().toString())
-            .setExpiration(new Date(now.getTime() + Duration.ofMinutes(360).toMillis()))
+            .setExpiration(new Date(now.getTime() + Duration.ofMinutes(10080).toMillis()))
             .claim("id", tokenDTO.getId())
             .claim("roles", "USER")
             .signWith(SignatureAlgorithm.HS256, JWT_SECRET)
