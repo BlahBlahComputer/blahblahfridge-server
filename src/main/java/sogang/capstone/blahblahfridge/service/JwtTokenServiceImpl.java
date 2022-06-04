@@ -5,7 +5,9 @@ import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -38,14 +40,17 @@ public class JwtTokenServiceImpl implements JwtTokenService {
             .setExpiration(new Date(now.getTime() + Duration.ofMinutes(10080).toMillis()))
             .claim("id", tokenDTO.getId())
             .claim("roles", "USER")
-            .signWith(SignatureAlgorithm.HS256, JWT_SECRET)
+            .signWith(SignatureAlgorithm.HS256,
+                Base64.getEncoder().encodeToString(JWT_SECRET.getBytes(
+                    StandardCharsets.UTF_8)))
             .compact();
     }
 
     @Override
     public String getUserIdFromJwtToken(String token) {
         Claims claims = Jwts.parser()
-            .setSigningKey(JWT_SECRET)
+            .setSigningKey(Base64.getEncoder().encodeToString(JWT_SECRET.getBytes(
+                StandardCharsets.UTF_8)))
             .parseClaimsJws(token)
             .getBody();
         return claims.getSubject();
@@ -63,7 +68,9 @@ public class JwtTokenServiceImpl implements JwtTokenService {
     @Override
     public boolean validateToken(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(token);
+            Jws<Claims> claims = Jwts.parser()
+                .setSigningKey(Base64.getEncoder().encodeToString(JWT_SECRET.getBytes(
+                    StandardCharsets.UTF_8))).parseClaimsJws(token);
             return !claims.getBody().getExpiration().before(new Date());
         } catch (Exception e) {
             return false;
