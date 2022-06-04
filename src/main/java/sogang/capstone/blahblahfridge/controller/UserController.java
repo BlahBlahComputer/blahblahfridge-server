@@ -18,8 +18,8 @@ import sogang.capstone.blahblahfridge.controller.request.UserImageRequest;
 import sogang.capstone.blahblahfridge.controller.request.UserNameRequest;
 import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.domain.User;
-import sogang.capstone.blahblahfridge.dto.ReviewDTO;
 import sogang.capstone.blahblahfridge.dto.UserDTO;
+import sogang.capstone.blahblahfridge.dto.UserReviewDTO;
 import sogang.capstone.blahblahfridge.exception.NotFoundException;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
 import sogang.capstone.blahblahfridge.persistence.UserRepository;
@@ -83,17 +83,17 @@ public class UserController {
 
     @GetMapping(value = "/review", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse<List<ReviewDTO>> getUserReviewById(
+    public CommonResponse<List<UserReviewDTO>> getUserReviewById(
         @AuthenticationPrincipal User authUser) {
         Optional<User> user = repo.findById(authUser.getId());
         if (user.isEmpty()) {
             throw new NotFoundException("해당 유저가 없습니다.");
         }
         List<Review> reviewList = rRepo.findAllByUserId(user.get().getId());
-        List<ReviewDTO> reviewDTOList = reviewList.stream()
-            .map(ReviewDTO::new)
+        List<UserReviewDTO> userReviewDTOList = reviewList.stream()
+            .map(UserReviewDTO::new)
             .collect(Collectors.toList());
 
-        return CommonResponse.onSuccess(reviewDTOList);
+        return CommonResponse.onSuccess(userReviewDTOList);
     }
 }
