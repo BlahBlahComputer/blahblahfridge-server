@@ -20,8 +20,6 @@ public class ReviewRequest {
     @NotNull(message = "content may not be null")
     String content;
     String image;
-    @NotNull(message = "userId may not be null")
-    Long userId;
     @NotNull(message = "menuId may not be null")
     Long menuId;
 

@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,10 +34,11 @@ public class UserController {
     UserRepository repo;
     ReviewRepository rRepo;
 
-    @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
+    @GetMapping(value = "", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse<UserDTO> getUserById(@PathVariable("id") Long id) {
-        Optional<User> user = repo.findById(id);
+    public CommonResponse<UserDTO> getUserById(@AuthenticationPrincipal User authUser
+    ) {
+        Optional<User> user = repo.findById(authUser.getId());
         if (user.isEmpty()) {
             throw new NotFoundException("해당 유저가 없습니다.");
         }
@@ -46,11 +47,11 @@ public class UserController {
         return CommonResponse.onSuccess(userDTO);
     }
 
-    @PutMapping(value = "/{id}/image", produces = "application/json; charset=utf-8")
+    @PutMapping(value = "/image", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse<UserDTO> editUserImageById(@PathVariable("id") Long id,
+    public CommonResponse<UserDTO> editUserImageById(@AuthenticationPrincipal User authUser,
         @Valid @RequestBody UserImageRequest userImageRequest) {
-        Optional<User> user = repo.findById(id);
+        Optional<User> user = repo.findById(authUser.getId());
         if (user.isEmpty()) {
             throw new NotFoundException("해당 유저가 없습니다.");
         }
@@ -63,11 +64,11 @@ public class UserController {
         return CommonResponse.onSuccess(userDTO);
     }
 
-    @PutMapping(value = "/{id}/name", produces = "application/json; charset=utf-8")
+    @PutMapping(value = "/name", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse<UserDTO> editUserNameById(@PathVariable("id") Long id,
+    public CommonResponse<UserDTO> editUserNameById(@AuthenticationPrincipal User authUser,
         @Valid @RequestBody UserNameRequest userNameRequest) {
-        Optional<User> user = repo.findById(id);
+        Optional<User> user = repo.findById(authUser.getId());
         if (user.isEmpty()) {
             throw new NotFoundException("해당 유저가 없습니다.");
         }
@@ -80,10 +81,11 @@ public class UserController {
         return CommonResponse.onSuccess(userDTO);
     }
 
-    @GetMapping(value = "/{id}/review", produces = "application/json; charset=utf-8")
+    @GetMapping(value = "/review", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse<List<ReviewDTO>> getUserReviewById(@PathVariable("id") Long id) {
-        Optional<User> user = repo.findById(id);
+    public CommonResponse<List<ReviewDTO>> getUserReviewById(
+        @AuthenticationPrincipal User authUser) {
+        Optional<User> user = repo.findById(authUser.getId());
         if (user.isEmpty()) {
             throw new NotFoundException("해당 유저가 없습니다.");
         }

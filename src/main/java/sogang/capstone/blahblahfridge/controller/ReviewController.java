@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import sogang.capstone.blahblahfridge.domain.Menu;
 import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.domain.User;
 import sogang.capstone.blahblahfridge.dto.ReviewDTO;
+import sogang.capstone.blahblahfridge.exception.BadRequestException;
 import sogang.capstone.blahblahfridge.exception.NotFoundException;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
@@ -48,13 +50,14 @@ public class ReviewController {
 
     @PostMapping(produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse<ReviewDTO> postReview(@Valid @RequestBody ReviewRequest reviewRequest) {
+    public CommonResponse<ReviewDTO> postReview(@AuthenticationPrincipal User authUser,
+        @Valid @RequestBody ReviewRequest reviewRequest) {
 
         Optional<Menu> menu = mRepo.findById(reviewRequest.getMenuId());
         if (menu.isEmpty()) {
             throw new NotFoundException("해당 메뉴가 없습니다.");
         }
-        Optional<User> user = uRepo.findById(reviewRequest.getUserId());
+        Optional<User> user = uRepo.findById(authUser.getId());
         if (user.isEmpty()) {
             throw new NotFoundException("해당 유저가 없습니다.");
         }
@@ -74,10 +77,14 @@ public class ReviewController {
 
     @DeleteMapping(value = "/{id}", produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse deleteReviewById(@PathVariable("id") Long id) {
+    public CommonResponse deleteReviewById(@AuthenticationPrincipal User authUser,
+        @PathVariable("id") Long id) {
         Optional<Review> review = repo.findById(id);
         if (review.isEmpty()) {
             throw new NotFoundException("해당 리뷰가 없습니다.");
+        }
+        if (review.get().getUser().getId() != authUser.getId()) {
+            throw new BadRequestException("해당 유저의 리뷰가 아닙니다.");
         }
         repo.delete(review.get());
 

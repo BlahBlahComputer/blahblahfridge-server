@@ -11,6 +11,7 @@ import sogang.capstone.blahblahfridge.domain.Review;
 @EqualsAndHashCode
 public class ReviewDTO {
 
+    private Long id;
     private String username;
     private String userimage;
     private String image;
@@ -19,6 +20,7 @@ public class ReviewDTO {
     private Timestamp created_at;
 
     public ReviewDTO(Review review) {
+        this.id = review.getId();
         this.username = review.getUser().getUsername();
         this.userimage = review.getUser().getImage();
         this.image = review.getImage();
