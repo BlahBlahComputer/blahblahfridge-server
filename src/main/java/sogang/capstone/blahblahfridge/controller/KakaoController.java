@@ -1,7 +1,6 @@
 package sogang.capstone.blahblahfridge.controller;
 
 import java.util.Optional;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +9,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -69,44 +67,18 @@ public class KakaoController {
 
         Optional<User> user = repo.findByAuthenticationCode(kakaoUserDTO.getAuthenticationCode());
         if (user.isEmpty()) {
-            return CommonResponse.onSuccess(kakaoTokenDTO);
+            User newUser = User.builder()
+                .username(kakaoUserDTO.getKakaoAccount().getProfile().getNickname())
+                .image(kakaoUserDTO.getKakaoAccount().getProfile().getImageUrl())
+                .authenticationCode(kakaoUserDTO.getAuthenticationCode())
+                .provider("kakao")
+                .build();
+            repo.save(newUser);
+            TokenDTO tokenDTO = new TokenDTO(newUser.getId());
+            return CommonResponse.onSuccess(jwtTokenServiceImpl.encodeJwtToken(tokenDTO));
         }
 
         TokenDTO tokenDTO = new TokenDTO(user.get().getId());
-        return CommonResponse.onSuccess(jwtTokenServiceImpl.encodeJwtToken(tokenDTO));
-    }
-
-    @PostMapping(value = "/register", produces = "application/json; charset=utf-8")
-    @ResponseBody
-    public CommonResponse postKakaoRegister(
-        @Valid @RequestBody KakaoTokenDTO kakaoTokenDTO) {
-
-        String getUserURL = "https://kapi.kakao.com/v2/user/me";
-
-        KakaoUserDTO kakaoUserDTO = (KakaoUserDTO) webClient.post().uri(getUserURL)
-            .header("Authorization", "Bearer " + kakaoTokenDTO.getAccessToken())
-            .retrieve()
-            .onStatus(HttpStatus::is4xxClientError,
-                clientResponse -> Mono.error(new BadRequestException("잘못된 요청입니다.")))
-            .bodyToMono(
-                ParameterizedTypeReference.forType(KakaoUserDTO.class))
-            .block();
-
-        Optional<User> checkUser = repo.findByAuthenticationCode(
-            kakaoUserDTO.getAuthenticationCode());
-        if (checkUser.isPresent()) {
-            return CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "이미 존재하는 유저입니다."); // 다시 하세요~!
-        }
-
-        User newUser = User.builder()
-            .username(kakaoUserDTO.getKakaoAccount().getProfile().getNickname())
-            .image(kakaoUserDTO.getKakaoAccount().getProfile().getImageUrl())
-            .authenticationCode(kakaoUserDTO.getAuthenticationCode())
-            .provider("kakao")
-            .build();
-        repo.save(newUser);
-
-        TokenDTO tokenDTO = new TokenDTO(newUser.getId());
         return CommonResponse.onSuccess(jwtTokenServiceImpl.encodeJwtToken(tokenDTO));
     }
 }
