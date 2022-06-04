@@ -35,7 +35,8 @@ public class MenuController {
 
     @GetMapping(produces = "application/json; charset=utf-8")
     @ResponseBody
-    public CommonResponse<List<MenuDTO>> findAllMenu(@RequestParam("name") String name) {
+    public CommonResponse<List<MenuDTO>> findAllMenu(
+        @RequestParam(value = "name", required = false) String name) {
         if (name != null) {
             List<Menu> menuList = repo.findAllByNameContaining(name);
             List<MenuDTO> menuDTOList = menuList.stream()
