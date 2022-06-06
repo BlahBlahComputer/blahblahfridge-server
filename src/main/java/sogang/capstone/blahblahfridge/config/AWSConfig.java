@@ -1,6 +1,7 @@
 package sogang.capstone.blahblahfridge.config;
 
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +16,7 @@ public class AWSConfig {
     @Bean
     public AmazonS3Client s3Client() {
         return (AmazonS3Client) AmazonS3ClientBuilder.standard()
-            .withRegion(region)
+            .withRegion(Regions.AP_NORTHEAST_2)
             .build();
     }
 }

@@ -35,6 +35,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/health/**").permitAll()
             .antMatchers("/kakao/**").permitAll()
             .antMatchers("/naver/**").permitAll()
+            .antMatchers("/review/**").permitAll()
             .anyRequest().authenticated()
             .and()
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService),
