@@ -129,7 +129,7 @@ public class MenuController {
         URI uri;
         try {
             uri = this.s3Client.generatePresignedUrl("blahblah-image",
-                randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.POST).toURI();
+                randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.PUT).toURI();
         } catch(URISyntaxException e) {
             throw new BadRequestException("파일 URL 생성중 오류가 발생했습니다.");
         }
@@ -145,33 +145,4 @@ public class MenuController {
         return CommonResponse.onSuccess(result);
     }
 
-    @PostMapping(value="/analyze", produces = "application/json; charset=utf-8")
-    @ResponseBody
-    public CommonResponse postImageAnalyze(@Valid @RequestBody AnalyzeRequest analyzeRequest) {
-        String analyzeURL =
-            "https://ai.blahblahfridge.site/analyze";
-        Map<String, String> bodyMap = new HashMap();
-        bodyMap.put("bucket", analyzeRequest.getBucket());
-        bodyMap.put("key", analyzeRequest.getKey());
-
-        AnalyzeResultDTO analyzeResultDTO = (AnalyzeResultDTO) webClient.post().uri(analyzeURL)
-            .body(BodyInserters.fromValue(bodyMap)).retrieve()
-            .onStatus(HttpStatus::is4xxClientError,
-                clientResponse -> Mono.error(new BadRequestException("잘못된 요청입니다.")))
-            .bodyToMono(
-                ParameterizedTypeReference.forType(AnalyzeResultDTO.class))
-            .block();
-
-        List<String> ingredientNameList = analyzeResultDTO.getRes();
-        List<Ingredient> ingredientList = iRepo.findAllByNameIn(ingredientNameList);
-        List<Long> ingredientIdList = ingredientList.stream().map(Ingredient::getId).collect(
-            Collectors.toList());
-        List<MenuIngredient> menuIngredientList = miRepo.findAllByIngredientIdIn(ingredientIdList);
-        List<Menu> menuList = menuIngredientList.stream().map(MenuIngredient::getMenu)
-            .collect(Collectors.toList());
-
-        List<MenuDTO> menuDTOList = menuList.stream().map(MenuDTO::new).collect(Collectors.toList());
-
-        return CommonResponse.onSuccess(menuDTOList);
-    }
 }

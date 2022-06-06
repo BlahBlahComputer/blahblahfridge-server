@@ -9,5 +9,5 @@ public interface MenuIngredientRepository extends JpaRepository<MenuIngredient, 
 
     public List<MenuIngredient> findAllByMenuId(Long id);
 
-    public List<MenuIngredient> findAllByIngredientIdIn(List<Long> ingredientIdList);
+//    public List<MenuIngredient> findAllWithIngredientIdCountOrderByCountDesc();
 }
