@@ -1,16 +1,23 @@
 package sogang.capstone.blahblahfridge.controller;
 
+import static java.util.stream.Collectors.groupingBy;
+
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.classmate.AnnotationOverrides;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
@@ -143,6 +150,42 @@ public class MenuController {
             .build();
 
         return CommonResponse.onSuccess(result);
+    }
+
+    @PostMapping(value="/analyze", produces = "application/json; charset=utf-8")
+    @ResponseBody
+    public CommonResponse postImageAnalyze(@Valid @RequestBody AnalyzeRequest analyzeRequest) {
+        String analyzeURL =
+            "https://ai.blahblahfridge.site/analyze";
+        Map<String, String> bodyMap = new HashMap();
+        bodyMap.put("bucket", analyzeRequest.getBucket());
+        bodyMap.put("key", analyzeRequest.getKey());
+
+        AnalyzeResultDTO analyzeResultDTO = (AnalyzeResultDTO) webClient.post().uri(analyzeURL)
+            .body(BodyInserters.fromValue(bodyMap)).retrieve()
+            .onStatus(HttpStatus::is4xxClientError,
+                clientResponse -> Mono.error(new BadRequestException("잘못된 요청입니다.")))
+            .bodyToMono(
+                ParameterizedTypeReference.forType(AnalyzeResultDTO.class))
+            .block();
+
+        List<String> ingredientNameList = analyzeResultDTO.getRes();
+//        List<String> ingredientNameList = new ArrayList<>();
+//        ingredientNameList.add("양파");
+//        ingredientNameList.add("파");
+
+        List<Ingredient> ingredientList = iRepo.findAllByNameIn(ingredientNameList);
+        List<Long> ingredientIdList = ingredientList.stream().map(Ingredient::getId).collect(
+            Collectors.toList());
+        List<MenuIngredient> menuIngredientList = miRepo.findAllByIngredientIdIn(ingredientIdList);
+
+        List<MenuDTO> menuDTOList = menuIngredientList.stream()
+            .map(MenuIngredient::getMenu)
+            .map(MenuDTO::new)
+            .collect(Collectors.toList());
+        LinkedHashSet<MenuDTO> resultSet = new LinkedHashSet<MenuDTO>(menuDTOList);
+
+        return CommonResponse.onSuccess(resultSet);
     }
 
 }
