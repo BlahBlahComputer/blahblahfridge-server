@@ -1,7 +1,15 @@
 package sogang.capstone.blahblahfridge.controller;
 
 
+import com.amazonaws.HttpMethod;
+import com.amazonaws.services.s3.AmazonS3;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
@@ -21,6 +29,8 @@ import sogang.capstone.blahblahfridge.domain.Menu;
 import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.domain.User;
 import sogang.capstone.blahblahfridge.dto.ReviewDTO;
+import sogang.capstone.blahblahfridge.dto.ReviewImageDTO;
+import sogang.capstone.blahblahfridge.exception.BadRequestException;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
 import sogang.capstone.blahblahfridge.persistence.UserRepository;
@@ -34,6 +44,7 @@ public class ReviewController {
     ReviewRepository repo;
     UserRepository uRepo;
     MenuRepository mRepo;
+    AmazonS3 s3Client;
 
     @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
     @ResponseBody
@@ -90,4 +101,28 @@ public class ReviewController {
         return CommonResponse.onSuccess(null);
     }
 
+    @GetMapping(value="/upload", produces = "application/json; charset=utf-8")
+    @ResponseBody
+    public CommonResponse<ReviewImageDTO> uploadImage() {
+        ZonedDateTime expiredDate = ZonedDateTime.now().plusHours(1);
+        UUID randomFileName = UUID.randomUUID();
+
+        URI uri;
+        try {
+            uri = this.s3Client.generatePresignedUrl("blahblah-review",
+                randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.POST).toURI();
+        } catch(URISyntaxException e) {
+            throw new BadRequestException("파일 URL 생성중 오류가 발생했습니다.");
+        }
+
+        String presignedURL = uri.toString();
+        String imageURL = "https://review-image.blahblahfridge.site/" + randomFileName.toString();
+
+        ReviewImageDTO result = ReviewImageDTO.builder()
+            .presignedURL(presignedURL)
+            .imageURL(imageURL)
+            .build();
+
+        return CommonResponse.onSuccess(result);
+    }
 }
