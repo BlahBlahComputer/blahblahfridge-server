@@ -145,23 +145,21 @@ public class MenuController {
     @PostMapping(value="/analyze", produces = "application/json; charset=utf-8")
     @ResponseBody
     public CommonResponse postImageAnalyze(@Valid @RequestBody AnalyzeRequest analyzeRequest) {
-//        String analyzeURL =
-//            "https://ai.blahblahfridge.site/analyze";
-//        Map<String, String> bodyMap = new HashMap();
-//        bodyMap.put("bucket", "blahblah-image");
-//        bodyMap.put("key", analyzeRequest.getKey());
-//
-//        AnalyzeResultDTO analyzeResultDTO = (AnalyzeResultDTO) webClient.post().uri(analyzeURL)
-//            .body(BodyInserters.fromValue(bodyMap)).retrieve()
-//            .onStatus(HttpStatus::is4xxClientError,
-//                clientResponse -> Mono.error(new BadRequestException("잘못된 요청입니다.")))
-//            .bodyToMono(
-//                ParameterizedTypeReference.forType(AnalyzeResultDTO.class))
-//            .block();
-//
-//        List<String> ingredientNameList = analyzeResultDTO.getRes();
-        List<String> ingredientNameList = new ArrayList<>();
-        ingredientNameList.add("포파포파");
+        String analyzeURL =
+            "https://ai.blahblahfridge.site/analyze";
+        Map<String, String> bodyMap = new HashMap();
+        bodyMap.put("bucket", "blahblah-image");
+        bodyMap.put("key", analyzeRequest.getKey());
+
+        AnalyzeResultDTO analyzeResultDTO = (AnalyzeResultDTO) webClient.post().uri(analyzeURL)
+            .body(BodyInserters.fromValue(bodyMap)).retrieve()
+            .onStatus(HttpStatus::is4xxClientError,
+                clientResponse -> Mono.error(new BadRequestException("잘못된 요청입니다.")))
+            .bodyToMono(
+                ParameterizedTypeReference.forType(AnalyzeResultDTO.class))
+            .block();
+
+        List<String> ingredientNameList = analyzeResultDTO.getRes();
 
         List<Ingredient> ingredientList = iRepo.findAllByNameIn(ingredientNameList);
         List<Long> ingredientIdList = ingredientList.stream().map(Ingredient::getId).collect(
