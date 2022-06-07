@@ -12,6 +12,6 @@ import lombok.ToString;
 @Getter
 @Builder
 public class ReviewImageDTO {
-    private String presignedURL;
-    private String imageURL;
+    String presignedURL;
+    String imageURL;
 }

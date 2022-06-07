@@ -127,6 +127,8 @@ public class MenuController {
         try {
             uri = this.s3Client.generatePresignedUrl("blahblah-image",
                 randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.PUT).toURI();
+        } catch(NullPointerException e) {
+            return CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "파일 URL 생성중 오류가 발생했습니다.");
         } catch(URISyntaxException e) {
             return CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "파일 URL 생성중 오류가 발생했습니다.");
         }

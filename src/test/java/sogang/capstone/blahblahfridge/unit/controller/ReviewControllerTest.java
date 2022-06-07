@@ -1,7 +1,15 @@
 package sogang.capstone.blahblahfridge.unit.controller;
 
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,6 +24,7 @@ import sogang.capstone.blahblahfridge.domain.MenuCategory;
 import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.domain.User;
 import sogang.capstone.blahblahfridge.dto.ReviewDTO;
+import sogang.capstone.blahblahfridge.dto.ReviewImageDTO;
 import sogang.capstone.blahblahfridge.dto.ReviewResponseDTO;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
@@ -380,8 +389,6 @@ public class ReviewControllerTest {
             .rate(5).content("굿").menuId(1L).build();
 
         ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
-        Mockito.when(mockReviewRepository.findById(1L))
-            .thenReturn(Optional.ofNullable(null));
         UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
         MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
         AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
@@ -397,6 +404,70 @@ public class ReviewControllerTest {
         // then
         CommonResponse result = reviewController.deleteReviewById(user1, 1L);
         Assertions.assertEquals(CommonResponse.onFailure(HttpStatus.NOT_FOUND, "해당 리뷰가 없습니다."),
+            result);
+    }
+
+    @Test
+    @DisplayName("리뷰 이미지 등록 URL 생성 실패 시, 예외 처리 되는지 확인")
+    public void testIfCreateReviewImageURLFailThenThrowException() {
+        // given
+        ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
+        UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
+        ZonedDateTime expiredDate = ZonedDateTime.now().plusHours(1);
+        UUID randomFileName = UUID.randomUUID();
+
+        Mockito.when(mockS3Client.generatePresignedUrl("blahblah-review",
+                randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.PUT))
+            .thenThrow(new RuntimeException(""));
+
+        // when
+        ReviewController reviewController = new ReviewController(
+            mockReviewRepository,
+            mockUserRepository,
+            mockMenuRepository,
+            mockS3Client
+        );
+
+        // then
+        CommonResponse result = reviewController.uploadImage();
+        Assertions.assertEquals(CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "파일 URL 생성중 오류가 발생했습니다."),
+            result);
+    }
+
+    @Test
+    @DisplayName("리뷰 이미지 등록 URI 생성 실패 시, 예외 처리 되는지 확인")
+    public void testIfCreateReviewImageURIFailThenThrowException()
+        throws URISyntaxException, MalformedURLException {
+        // given
+        ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
+        UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
+        ZonedDateTime expiredDate = ZonedDateTime.now().plusHours(1);
+        UUID randomFileName = UUID.randomUUID();
+        URL url =  new URL("https://blahblah-review.s3.ap-northeast-2.amazonaws.com/some-resource");
+
+        Mockito.when(mockS3Client.generatePresignedUrl("blahblah-review", randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.PUT))
+            .thenReturn(url);
+        Mockito.when(mockS3Client.generatePresignedUrl("blahblah-review",
+                randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.PUT).toURI())
+            .thenThrow(new RuntimeException());
+
+        // when
+        ReviewController reviewController = new ReviewController(
+            mockReviewRepository,
+            mockUserRepository,
+            mockMenuRepository,
+            mockS3Client
+        );
+
+        // then
+        CommonResponse result = reviewController.uploadImage();
+        Assertions.assertEquals(CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "파일 URL 생성중 오류가 발생했습니다."),
             result);
     }
 }

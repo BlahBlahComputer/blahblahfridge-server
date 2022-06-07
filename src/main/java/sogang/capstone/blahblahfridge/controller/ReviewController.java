@@ -3,6 +3,7 @@ package sogang.capstone.blahblahfridge.controller;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -117,6 +118,8 @@ public class ReviewController {
         try {
             uri = this.s3Client.generatePresignedUrl("blahblah-review",
                 randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.PUT).toURI();
+        } catch(NullPointerException e) {
+            return CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "파일 URL 생성중 오류가 발생했습니다.");
         } catch(URISyntaxException e) {
             return CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "파일 URL 생성중 오류가 발생했습니다.");
         }
