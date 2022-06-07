@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -127,7 +128,7 @@ public class MenuController {
             uri = this.s3Client.generatePresignedUrl("blahblah-image",
                 randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.PUT).toURI();
         } catch(URISyntaxException e) {
-            throw new BadRequestException("파일 URL 생성중 오류가 발생했습니다.");
+            return CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "파일 URL 생성중 오류가 발생했습니다.");
         }
 
         String presignedURL = uri.toString();
@@ -144,31 +145,37 @@ public class MenuController {
     @PostMapping(value="/analyze", produces = "application/json; charset=utf-8")
     @ResponseBody
     public CommonResponse postImageAnalyze(@Valid @RequestBody AnalyzeRequest analyzeRequest) {
-        String analyzeURL =
-            "https://ai.blahblahfridge.site/analyze";
-        Map<String, String> bodyMap = new HashMap();
-        bodyMap.put("bucket", "blahblah-image");
-        bodyMap.put("key", analyzeRequest.getKey());
-
-        AnalyzeResultDTO analyzeResultDTO = (AnalyzeResultDTO) webClient.post().uri(analyzeURL)
-            .body(BodyInserters.fromValue(bodyMap)).retrieve()
-            .onStatus(HttpStatus::is4xxClientError,
-                clientResponse -> Mono.error(new BadRequestException("잘못된 요청입니다.")))
-            .bodyToMono(
-                ParameterizedTypeReference.forType(AnalyzeResultDTO.class))
-            .block();
-
-        List<String> ingredientNameList = analyzeResultDTO.getRes();
+//        String analyzeURL =
+//            "https://ai.blahblahfridge.site/analyze";
+//        Map<String, String> bodyMap = new HashMap();
+//        bodyMap.put("bucket", "blahblah-image");
+//        bodyMap.put("key", analyzeRequest.getKey());
+//
+//        AnalyzeResultDTO analyzeResultDTO = (AnalyzeResultDTO) webClient.post().uri(analyzeURL)
+//            .body(BodyInserters.fromValue(bodyMap)).retrieve()
+//            .onStatus(HttpStatus::is4xxClientError,
+//                clientResponse -> Mono.error(new BadRequestException("잘못된 요청입니다.")))
+//            .bodyToMono(
+//                ParameterizedTypeReference.forType(AnalyzeResultDTO.class))
+//            .block();
+//
+//        List<String> ingredientNameList = analyzeResultDTO.getRes();
+        List<String> ingredientNameList = new ArrayList<>();
+        ingredientNameList.add("포파포파");
 
         List<Ingredient> ingredientList = iRepo.findAllByNameIn(ingredientNameList);
         List<Long> ingredientIdList = ingredientList.stream().map(Ingredient::getId).collect(
             Collectors.toList());
         List<List<Long>> menuIngredientList = miRepo.findAllMenuAndCountByIngredientIdIn(ingredientIdList);
 
-        List<MenuDTO> menuDTOList = new ArrayList<>();
+        List<Long> menuIdList = new ArrayList<>();
         for(int i=0;i< menuIngredientList.size();i++){
-            menuDTOList.add(new MenuDTO(repo.findById(menuIngredientList.get(i).get(0)).get()));
+            menuIdList.add(menuIngredientList.get(i).get(0));
         }
+
+        List<Menu> menuList = repo.findAllByIdIn(menuIdList);
+        List<MenuDTO> menuDTOList = new ArrayList<>();
+        menuIdList.stream().flatMap(v1 -> menuList.stream().filter(v2 -> Objects.equals(v1, v2.getId()))).forEach(o -> menuDTOList.add(new MenuDTO(o)));
 
         return CommonResponse.onSuccess(menuDTOList);
     }

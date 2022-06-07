@@ -118,7 +118,7 @@ public class ReviewController {
             uri = this.s3Client.generatePresignedUrl("blahblah-review",
                 randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.PUT).toURI();
         } catch(URISyntaxException e) {
-            throw new BadRequestException("파일 URL 생성중 오류가 발생했습니다.");
+            return CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "파일 URL 생성중 오류가 발생했습니다.");
         }
 
         String presignedURL = uri.toString();
