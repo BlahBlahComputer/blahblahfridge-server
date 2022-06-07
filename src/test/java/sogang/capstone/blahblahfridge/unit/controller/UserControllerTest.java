@@ -303,9 +303,10 @@ public class UserControllerTest {
         CommonResponse<List<UserReviewDTO>> result = userController.getUserReviewById(user);
 
         // then
-        List<ReviewDTO> reviewDTOList = reviewList.stream()
-            .map(ReviewDTO::new)
+        List<UserReviewDTO> userReviewDTOList = reviewList.stream()
+            .map(UserReviewDTO::new)
             .collect(Collectors.toList());
-        Assertions.assertEquals(CommonResponse.onSuccess(reviewDTOList), result);
+
+        Assertions.assertEquals(CommonResponse.onSuccess(userReviewDTOList), result);
     }
 }
