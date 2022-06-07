@@ -14,8 +14,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AnalyzeRequest {
 
-    @NotNull(message = "bucket may not be null")
-    String bucket;
     @NotNull(message = "key may not be null")
     String key;
 }
