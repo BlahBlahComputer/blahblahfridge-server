@@ -1,6 +1,15 @@
 package sogang.capstone.blahblahfridge.unit.controller;
 
+import com.amazonaws.HttpMethod;
+import com.amazonaws.services.s3.AmazonS3;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +24,8 @@ import sogang.capstone.blahblahfridge.domain.MenuCategory;
 import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.domain.User;
 import sogang.capstone.blahblahfridge.dto.ReviewDTO;
+import sogang.capstone.blahblahfridge.dto.ReviewImageDTO;
+import sogang.capstone.blahblahfridge.dto.ReviewResponseDTO;
 import sogang.capstone.blahblahfridge.persistence.MenuRepository;
 import sogang.capstone.blahblahfridge.persistence.ReviewRepository;
 import sogang.capstone.blahblahfridge.persistence.UserRepository;
@@ -25,29 +36,35 @@ public class ReviewControllerTest {
     @DisplayName("리뷰를 아이디로 검색했으나 결과가 없을 때, 예외 처리 되는지 확인")
     public void testIfReviewNotExistThenThrowException() {
         // given
+        User user1 = User.builder().id(1L).username("유저1").authenticationCode("123")
+            .provider("kakao")
+            .build();
+
         ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
         Mockito.when(mockReviewRepository.findById(100L))
             .thenReturn(Optional.ofNullable(null));
 
         UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
         MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
 
         // when
         ReviewController reviewController = new ReviewController(
             mockReviewRepository,
             mockUserRepository,
-            mockMenuRepository
+            mockMenuRepository,
+            mockS3Client
         );
 
         // then
-        CommonResponse result = reviewController.getReviewById(100L);
+        CommonResponse result = reviewController.getReviewById(user1,100L);
         Assertions.assertEquals(CommonResponse.onFailure(HttpStatus.NOT_FOUND, "해당 리뷰가 없습니다."),
             result);
     }
 
     @Test
-    @DisplayName("리뷰를 아이디로 검색해서 결과가 있을 때, 결과가 나오는지 확인")
-    public void testIfReviewExistThenReturnReview() {
+    @DisplayName("리뷰를 아이디로 검색해서 결과가 있을 때, 삭제 가능한 결과가 나오는지 확인")
+    public void testIfReviewExistDeletableThenReturnReview() {
         // given
         MenuCategory menuCategory = MenuCategory.builder()
             .id(1L)
@@ -75,19 +92,69 @@ public class ReviewControllerTest {
 
         UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
         MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
 
         // when
         ReviewController reviewController = new ReviewController(
             mockReviewRepository,
             mockUserRepository,
-            mockMenuRepository
+            mockMenuRepository,
+            mockS3Client
         );
-        CommonResponse<ReviewDTO> result = reviewController.getReviewById(1L);
+        CommonResponse<ReviewResponseDTO> result = reviewController.getReviewById(user1,1L);
 
         // then
-        Assertions.assertEquals(CommonResponse.onSuccess(new ReviewDTO(review)), result);
+        Assertions.assertEquals(CommonResponse.onSuccess(new ReviewResponseDTO(review, true)), result);
     }
 
+    @Test
+    @DisplayName("리뷰를 아이디로 검색해서 결과가 있을 때, 삭제 불가능한 결과가 나오는지 확인")
+    public void testIfReviewExistUndeletableThenReturnReview() {
+        // given
+        MenuCategory menuCategory = MenuCategory.builder()
+            .id(1L)
+            .name("한식")
+            .build();
+
+        Menu menu = Menu.builder()
+            .id(1L)
+            .name("메뉴")
+            .time(1)
+            .recipe("레시피")
+            .image("이미지")
+            .menuCategory(menuCategory)
+            .build();
+
+        User user1 = User.builder().id(1L).username("유저1").authenticationCode("123")
+            .provider("kakao")
+            .build();
+
+        User user2 = User.builder().id(2L).username("유저2").authenticationCode("456")
+            .provider("kakao")
+            .build();
+
+        Review review = Review.builder().id(1L).rate(5).content("굿").user(user1).menu(menu).build();
+
+        ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
+        Mockito.when(mockReviewRepository.findById(1L))
+            .thenReturn(Optional.ofNullable(review));
+
+        UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
+
+        // when
+        ReviewController reviewController = new ReviewController(
+            mockReviewRepository,
+            mockUserRepository,
+            mockMenuRepository,
+            mockS3Client
+        );
+        CommonResponse<ReviewResponseDTO> result = reviewController.getReviewById(user2,1L);
+
+        // then
+        Assertions.assertEquals(CommonResponse.onSuccess(new ReviewResponseDTO(review, false)), result);
+    }
 
     @Test
     @DisplayName("리뷰 등록 성공 시, 결과가 나오는지 확인")
@@ -122,12 +189,14 @@ public class ReviewControllerTest {
         MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
         Mockito.when(mockMenuRepository.findById(1L))
             .thenReturn(Optional.ofNullable(menu));
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
 
         // when
         ReviewController reviewController = new ReviewController(
             mockReviewRepository,
             mockUserRepository,
-            mockMenuRepository
+            mockMenuRepository,
+            mockS3Client
         );
         CommonResponse<ReviewDTO> result = reviewController.postReview(user1, reviewRequest);
 
@@ -173,12 +242,14 @@ public class ReviewControllerTest {
         MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
         Mockito.when(mockMenuRepository.findById(1L))
             .thenReturn(Optional.ofNullable(null));
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
 
         // when
         ReviewController reviewController = new ReviewController(
             mockReviewRepository,
             mockUserRepository,
-            mockMenuRepository
+            mockMenuRepository,
+            mockS3Client
         );
 
         // then
@@ -220,12 +291,14 @@ public class ReviewControllerTest {
         UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
         Mockito.when(mockUserRepository.findById(1L))
             .thenReturn(Optional.ofNullable(null));
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
 
         // when
         ReviewController reviewController = new ReviewController(
             mockReviewRepository,
             mockUserRepository,
-            mockMenuRepository
+            mockMenuRepository,
+            mockS3Client
         );
 
         // then
@@ -269,12 +342,14 @@ public class ReviewControllerTest {
         MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
         Mockito.when(mockMenuRepository.findById(1L))
             .thenReturn(Optional.ofNullable(menu));
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
 
         // when
         ReviewController reviewController = new ReviewController(
             mockReviewRepository,
             mockUserRepository,
-            mockMenuRepository
+            mockMenuRepository,
+            mockS3Client
         );
         CommonResponse result = reviewController.deleteReviewById(user1, 1L);
 
@@ -314,21 +389,85 @@ public class ReviewControllerTest {
             .rate(5).content("굿").menuId(1L).build();
 
         ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
-        Mockito.when(mockReviewRepository.findById(1L))
-            .thenReturn(Optional.ofNullable(null));
         UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
         MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
 
         // when
         ReviewController reviewController = new ReviewController(
             mockReviewRepository,
             mockUserRepository,
-            mockMenuRepository
+            mockMenuRepository,
+            mockS3Client
         );
 
         // then
         CommonResponse result = reviewController.deleteReviewById(user1, 1L);
         Assertions.assertEquals(CommonResponse.onFailure(HttpStatus.NOT_FOUND, "해당 리뷰가 없습니다."),
+            result);
+    }
+
+    @Test
+    @DisplayName("리뷰 이미지 등록 URL 생성 실패 시, 예외 처리 되는지 확인")
+    public void testIfCreateReviewImageURLFailThenThrowException() {
+        // given
+        ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
+        UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
+        ZonedDateTime expiredDate = ZonedDateTime.now().plusHours(1);
+        UUID randomFileName = UUID.randomUUID();
+
+        Mockito.when(mockS3Client.generatePresignedUrl("blahblah-review",
+                randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.PUT))
+            .thenThrow(new RuntimeException(""));
+
+        // when
+        ReviewController reviewController = new ReviewController(
+            mockReviewRepository,
+            mockUserRepository,
+            mockMenuRepository,
+            mockS3Client
+        );
+
+        // then
+        CommonResponse result = reviewController.uploadImage();
+        Assertions.assertEquals(CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "파일 URL 생성중 오류가 발생했습니다."),
+            result);
+    }
+
+    @Test
+    @DisplayName("리뷰 이미지 등록 URI 생성 실패 시, 예외 처리 되는지 확인")
+    public void testIfCreateReviewImageURIFailThenThrowException()
+        throws URISyntaxException, MalformedURLException {
+        // given
+        ReviewRepository mockReviewRepository = Mockito.mock(ReviewRepository.class);
+        UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
+        MenuRepository mockMenuRepository = Mockito.mock(MenuRepository.class);
+
+        AmazonS3 mockS3Client = Mockito.mock(AmazonS3.class);
+        ZonedDateTime expiredDate = ZonedDateTime.now().plusHours(1);
+        UUID randomFileName = UUID.randomUUID();
+        URL url =  new URL("https://blahblah-review.s3.ap-northeast-2.amazonaws.com/some-resource");
+
+        Mockito.when(mockS3Client.generatePresignedUrl("blahblah-review", randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.PUT))
+            .thenReturn(url);
+        Mockito.when(mockS3Client.generatePresignedUrl("blahblah-review",
+                randomFileName.toString(), Date.from(expiredDate.toInstant()), HttpMethod.PUT).toURI())
+            .thenThrow(new RuntimeException());
+
+        // when
+        ReviewController reviewController = new ReviewController(
+            mockReviewRepository,
+            mockUserRepository,
+            mockMenuRepository,
+            mockS3Client
+        );
+
+        // then
+        CommonResponse result = reviewController.uploadImage();
+        Assertions.assertEquals(CommonResponse.onFailure(HttpStatus.BAD_REQUEST, "파일 URL 생성중 오류가 발생했습니다."),
             result);
     }
 }
