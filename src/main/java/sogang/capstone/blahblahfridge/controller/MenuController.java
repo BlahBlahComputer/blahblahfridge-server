@@ -20,7 +20,10 @@ import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -39,6 +43,7 @@ import sogang.capstone.blahblahfridge.domain.Menu;
 import sogang.capstone.blahblahfridge.domain.MenuIngredient;
 import sogang.capstone.blahblahfridge.domain.Review;
 import sogang.capstone.blahblahfridge.dto.AIImageDTO;
+import sogang.capstone.blahblahfridge.dto.AnalyzeRequestDTO;
 import sogang.capstone.blahblahfridge.dto.AnalyzeResultDTO;
 import sogang.capstone.blahblahfridge.dto.MenuDTO;
 import sogang.capstone.blahblahfridge.dto.MenuIngredientDTO;
@@ -60,7 +65,7 @@ public class MenuController {
     ReviewRepository rRepo;
     IngredientRepository iRepo;
     AmazonS3 s3Client;
-    WebClient webClient;
+    RestTemplate restTemplate;
 
     @GetMapping(produces = "application/json; charset=utf-8")
     @ResponseBody
@@ -147,21 +152,24 @@ public class MenuController {
     @PostMapping(value="/analyze", produces = "application/json; charset=utf-8")
     @ResponseBody
     public CommonResponse postImageAnalyze(@Valid @RequestBody AnalyzeRequest analyzeRequest) {
-        String analyzeURL =
-            "https://ai.blahblahfridge.site/analyze";
-        Map<String, String> bodyMap = new HashMap();
-        bodyMap.put("bucket", "blahblah-image");
-        bodyMap.put("key", analyzeRequest.getKey());
+        AnalyzeRequestDTO requestDto = AnalyzeRequestDTO.builder()
+            .bucket("blahblah-image")
+            .key(analyzeRequest.getKey())
+            .build();
 
-        AnalyzeResultDTO analyzeResultDTO = (AnalyzeResultDTO) webClient.post().uri(analyzeURL)
-            .body(BodyInserters.fromValue(bodyMap)).retrieve()
-            .onStatus(HttpStatus::is4xxClientError,
-                clientResponse -> Mono.error(new BadRequestException("잘못된 요청입니다.")))
-            .bodyToMono(
-                ParameterizedTypeReference.forType(AnalyzeResultDTO.class))
-            .block();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
 
-        List<String> ingredientNameList = analyzeResultDTO.getRes();
+        HttpEntity<AnalyzeRequestDTO> entity = new HttpEntity<AnalyzeRequestDTO>(requestDto, headers);
+
+        ResponseEntity<AnalyzeResultDTO> analyzeResultDTO = restTemplate.exchange(
+            "https://ai.blahblahfridge.site/analyze",
+            org.springframework.http.HttpMethod.POST,
+            entity,
+            AnalyzeResultDTO.class
+        );
+
+        List<String> ingredientNameList = analyzeResultDTO.getBody().getRes();
 
         List<Ingredient> ingredientList = iRepo.findAllByNameIn(ingredientNameList);
         List<Long> ingredientIdList = ingredientList.stream().map(Ingredient::getId).collect(
