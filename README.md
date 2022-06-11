@@ -38,7 +38,7 @@
 
 ---
 
-## Convention
+## 🧷 Convention
 
 **code**
 
@@ -50,7 +50,7 @@ ex) feat: image upload
 
 ---
 
-## Project Foldering
+## 📂 Project Foldering
 
 ```tsx
 .gradle
