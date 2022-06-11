@@ -19,11 +19,14 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -65,7 +68,6 @@ public class MenuController {
     ReviewRepository rRepo;
     IngredientRepository iRepo;
     AmazonS3 s3Client;
-    RestTemplate restTemplate;
 
     @GetMapping(produces = "application/json; charset=utf-8")
     @ResponseBody
@@ -156,6 +158,16 @@ public class MenuController {
             .bucket("blahblah-image")
             .key(analyzeRequest.getKey())
             .build();
+
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setReadTimeout(5000);  // 읽기시간초과, ms
+        factory.setConnectTimeout(3000); // 연결시간초과, ms
+        HttpClient httpClient = HttpClientBuilder.create()
+            .setMaxConnTotal(100) // connection pool 적용
+            .setMaxConnPerRoute(5) // connection pool 적용
+            .build();
+        factory.setHttpClient(httpClient); // 동기실행에 사용될 HttpClient 세팅
+        RestTemplate restTemplate = new RestTemplate(factory);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
